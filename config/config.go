@@ -12,7 +12,7 @@ type Config struct {
 }
 
 func LoadConfig() Config {
-	log.Print("Loading environment variables...")
+	log.Print("Loading environment variable")
 	tiktokAPIKey := os.Getenv("TIKTOK_API_KEY")
 	twitchBearerToken := os.Getenv("TWITCH_BEARER_TOKEN")
 	twitchClientId := os.Getenv("TWITCH_CLIENT_ID")
