@@ -15,7 +15,7 @@ type TwitchClient struct {
 func NewTwitchClient(config config.Config) *TwitchClient {
 	log.Print("Building TwitchClient instance")
 	client := &TwitchClient{
-		headers:    nil,
+		headers:    make(map[string]string),
 		httpClient: &http.Client{},
 	}
 	client.headers["Authorization"] = "Bearer " + config.TwitchBearerToken

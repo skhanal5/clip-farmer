@@ -6,19 +6,26 @@ import (
 )
 
 type Config struct {
-	TiktokApiKey      string
-	TwitchBearerToken string
-	TwitchClientId    string
+	TiktokApiKey       string
+	TwitchClientId     string
+	TwitchClientSecret string
+	TwitchBearerToken  string
 }
 
 func LoadConfig() Config {
 	log.Print("Loading environment variable")
 	tiktokAPIKey := os.Getenv("TIKTOK_API_KEY")
-	twitchBearerToken := os.Getenv("TWITCH_BEARER_TOKEN")
 	twitchClientId := os.Getenv("TWITCH_CLIENT_ID")
+	twitchClientSecret := os.Getenv("TWITCH_CLIENT_SECRET")
 	return Config{
 		tiktokAPIKey,
-		twitchBearerToken,
 		twitchClientId,
+		twitchClientSecret,
+		"",
 	}
+}
+
+// mutable, probably is an antipattern -> fix this
+func (config *Config) SetTwitchClientSecret(secret string) {
+	config.TwitchClientSecret = secret
 }
