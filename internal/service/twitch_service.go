@@ -6,6 +6,7 @@ import (
 	"github.com/skhanal5/clip-farmer/internal/api"
 	model "github.com/skhanal5/clip-farmer/model/twitch"
 	"log"
+	"net/http"
 )
 
 const (
@@ -14,35 +15,42 @@ const (
 )
 
 type TwitchService struct {
+	headers      map[string]string
 	twitchClient *api.TwitchClient
 }
 
 func NewTwitchService(config config.Config) *TwitchService {
 	log.Print("Building new TwitchService instance")
-	return &TwitchService{
-		twitchClient: api.NewTwitchClient(config),
+	service := &TwitchService{
+		headers:      make(map[string]string),
+		twitchClient: api.NewTwitchClient(),
 	}
+	service.headers["Authorization"] = "Bearer " + config.TwitchOAuthConfig.AccessToken
+	service.headers["Client-Id"] = config.TwitchClientId
+	return service
 }
 
-func (s *TwitchService) FetchUser(username string) (model.TwitchGraphQLResponse, error) {
-	log.Print("Fetching user details for: " + username)
-	usersEndpoint := formatUsersEndpoint(username)
-	resp, err := s.twitchClient.SendGetRequest(usersEndpoint)
+func (service *TwitchService) FetchUsers(user string) (model.TwitchGraphQLResponse, error) {
+	log.Print("Fetching user details for: " + user)
+
+	req := service.buildUsersRequest(user)
+	body, err := service.twitchClient.SendGetRequest(req)
 	if err != nil {
 		return model.TwitchGraphQLResponse{}, err
 	}
+
 	var gqlResponse model.TwitchGraphQLResponse
-	err = json.Unmarshal(resp, &gqlResponse)
+	err = json.Unmarshal(body, &gqlResponse)
 	if err != nil {
 		return model.TwitchGraphQLResponse{}, err
 	}
 	return gqlResponse, nil
 }
 
-func (s *TwitchService) FetchUserClips(broadcasterId string) (model.TwitchGraphQLResponse, error) {
+func (service *TwitchService) FetchUserClips(broadcasterId string) (model.TwitchGraphQLResponse, error) {
 	log.Print("Fetching clips from user with broadcastId: " + broadcasterId)
-	clipsEndpoint := formatClipsEndpoint(broadcasterId)
-	responseBody, err := s.twitchClient.SendGetRequest(clipsEndpoint)
+	clipsEndpoint := service.buildClipsRequest(broadcasterId)
+	responseBody, err := service.twitchClient.SendGetRequest(clipsEndpoint)
 	if err != nil {
 		return model.TwitchGraphQLResponse{}, err
 	}
@@ -54,10 +62,30 @@ func (s *TwitchService) FetchUserClips(broadcasterId string) (model.TwitchGraphQ
 	return gqlResponse, nil
 }
 
-func formatClipsEndpoint(broadcasterId string) string {
-	return twitchClipsAPI + "?broadcaster_id=" + broadcasterId
+func (service *TwitchService) buildUsersRequest(user string) *http.Request {
+	request, _ := http.NewRequest("GET", twitchUsersAPI, nil)
+
+	queryParams := request.URL.Query()
+	queryParams.Add("login", user)
+	request.URL.RawQuery = queryParams.Encode()
+
+	setRequestHeaders(request, service.headers)
+	return request
 }
 
-func formatUsersEndpoint(loginName string) string {
-	return twitchUsersAPI + "?login_name=" + loginName
+func (service *TwitchService) buildClipsRequest(broadcasterId string) *http.Request {
+	request, _ := http.NewRequest("GET", twitchClipsAPI, nil)
+
+	queryParams := request.URL.Query()
+	queryParams.Add("broadcaster_id", broadcasterId)
+	request.URL.RawQuery = queryParams.Encode()
+
+	setRequestHeaders(request, service.headers)
+	return request
+}
+
+func setRequestHeaders(req *http.Request, headers map[string]string) {
+	for key, value := range headers {
+		req.Header.Add(key, value)
+	}
 }

@@ -1,6 +1,7 @@
 package config
 
 import (
+	model "github.com/skhanal5/clip-farmer/model/twitch"
 	"log"
 	"os"
 )
@@ -9,7 +10,7 @@ type Config struct {
 	TiktokApiKey       string
 	TwitchClientId     string
 	TwitchClientSecret string
-	TwitchBearerToken  string
+	TwitchOAuthConfig  model.TwitchOAuthResponse
 }
 
 func LoadConfig() Config {
@@ -21,11 +22,10 @@ func LoadConfig() Config {
 		tiktokAPIKey,
 		twitchClientId,
 		twitchClientSecret,
-		"",
+		model.TwitchOAuthResponse{},
 	}
 }
 
-// mutable, probably is an antipattern -> fix this
-func (config *Config) SetTwitchClientSecret(secret string) {
-	config.TwitchClientSecret = secret
+func (config *Config) SetTwitchBearerToken(oauthResponse model.TwitchOAuthResponse) {
+	config.TwitchOAuthConfig = oauthResponse
 }

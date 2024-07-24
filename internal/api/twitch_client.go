@@ -1,35 +1,25 @@
 package api
 
 import (
-	"github.com/skhanal5/clip-farmer/config"
+	"errors"
 	"io"
 	"log"
 	"net/http"
 )
 
 type TwitchClient struct {
-	headers    map[string]string
 	httpClient *http.Client
 }
 
-func NewTwitchClient(config config.Config) *TwitchClient {
+func NewTwitchClient() *TwitchClient {
 	log.Print("Building TwitchClient instance")
 	client := &TwitchClient{
-		headers:    make(map[string]string),
 		httpClient: &http.Client{},
 	}
-	client.headers["Authorization"] = "Bearer " + config.TwitchBearerToken
-	client.headers["Client-Id"] = config.TwitchClientId
 	return client
 }
 
-func (client *TwitchClient) SendGetRequest(endpoint string) ([]byte, error) {
-	log.Print("Sending GET request to:" + endpoint)
-	req, err := http.NewRequest("GET", endpoint, nil)
-	if err != nil {
-		return nil, err
-	}
-	setRequestHeaders(req, client.headers)
+func (client *TwitchClient) SendGetRequest(req *http.Request) ([]byte, error) {
 	resp, err := client.httpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -38,6 +28,9 @@ func (client *TwitchClient) SendGetRequest(endpoint string) ([]byte, error) {
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
+	}
+	if resp.StatusCode != 200 {
+		return nil, errors.New(string(body))
 	}
 	return body, nil
 }

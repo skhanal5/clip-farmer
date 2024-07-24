@@ -20,7 +20,7 @@ type TwitchOAuthClient struct {
 	httpClient *http.Client
 }
 
-func NewTwitchClient(config config.Config) *TwitchOAuthClient {
+func NewTwitchOAuthClient(config config.Config) *TwitchOAuthClient {
 	log.Print("Building TwitchOAuthClient instance")
 	client := &TwitchOAuthClient{
 		headers:    make(map[string]string),

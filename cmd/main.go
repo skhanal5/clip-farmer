@@ -4,19 +4,21 @@ import (
 	"fmt"
 	"github.com/skhanal5/clip-farmer/config"
 	"github.com/skhanal5/clip-farmer/internal/oauth"
+	"github.com/skhanal5/clip-farmer/internal/service"
 )
 
 func main() {
 	configuration := config.LoadConfig()
-	fmt.Println(configuration)
-	twitchOAuthClient := oauth.NewTwitchClient(configuration)
-	oauthResp, err := twitchOAuthClient.FetchAppOAuth()
+	twitchClient := oauth.NewTwitchOAuthClient(configuration)
+	oauthResp, err := twitchClient.FetchAppOAuth()
 	if err != nil {
 		fmt.Print(err.Error())
 	}
-	fmt.Print(oauthResp.AccessToken)
-	configuration.SetTwitchClientSecret(oauthResp.AccessToken)
-	//twitchService := service.NewTwitchService(configuration)
-	//res, err := twitchService.FetchUser("test")
-	//fmt.Print(res, err)
+	configuration.SetTwitchBearerToken(oauthResp)
+	s := service.NewTwitchService(configuration)
+	res, err := s.FetchUsers("plaqueboymax")
+	id, err := res.GetValueFromData("id")
+	idS := fmt.Sprintf("%s", id)
+	res, err = s.FetchUserClips(idS)
+	fmt.Print(res, err)
 }
