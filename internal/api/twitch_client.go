@@ -21,22 +21,21 @@ func NewTwitchClient() *TwitchClient {
 
 func (client *TwitchClient) SendGetRequest(req *http.Request) ([]byte, error) {
 	resp, err := client.httpClient.Do(req)
+
 	if err != nil {
 		return nil, err
 	}
+
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
+
 	if err != nil {
 		return nil, err
 	}
+
 	if resp.StatusCode != 200 {
 		return nil, errors.New(string(body))
 	}
-	return body, nil
-}
 
-func setRequestHeaders(req *http.Request, headers map[string]string) {
-	for key, value := range headers {
-		req.Header.Add(key, value)
-	}
+	return body, nil
 }

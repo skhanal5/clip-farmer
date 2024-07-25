@@ -30,39 +30,44 @@ func NewTwitchService(config config.Config) *TwitchService {
 	return service
 }
 
-func (service *TwitchService) FetchUsers(user string) (model.TwitchGraphQLResponse, error) {
-	log.Print("Fetching user details for: " + user)
+func (service *TwitchService) FetchUsers(user string) (model.TwitchUserResponse, error) {
+	usersRequest := service.buildUsersRequest(user)
 
-	req := service.buildUsersRequest(user)
-	body, err := service.twitchClient.SendGetRequest(req)
+	log.Print("Invoking GET Users clips")
+	body, err := service.twitchClient.SendGetRequest(usersRequest)
 	if err != nil {
-		return model.TwitchGraphQLResponse{}, err
+		return model.TwitchUserResponse{}, err
 	}
 
-	var gqlResponse model.TwitchGraphQLResponse
+	var gqlResponse model.TwitchUserResponse
 	err = json.Unmarshal(body, &gqlResponse)
 	if err != nil {
-		return model.TwitchGraphQLResponse{}, err
+		return model.TwitchUserResponse{}, err
 	}
+
 	return gqlResponse, nil
 }
 
-func (service *TwitchService) FetchUserClips(broadcasterId string) (model.TwitchGraphQLResponse, error) {
-	log.Print("Fetching clips from user with broadcastId: " + broadcasterId)
-	clipsEndpoint := service.buildClipsRequest(broadcasterId)
-	responseBody, err := service.twitchClient.SendGetRequest(clipsEndpoint)
+func (service *TwitchService) FetchUserClips(broadcasterId string) (model.TwitchClipResponse, error) {
+	clipsRequest := service.buildClipsRequest(broadcasterId)
+
+	log.Print("Invoking GET Clips request")
+	responseBody, err := service.twitchClient.SendGetRequest(clipsRequest)
 	if err != nil {
-		return model.TwitchGraphQLResponse{}, err
+		return model.TwitchClipResponse{}, err
 	}
-	var gqlResponse model.TwitchGraphQLResponse
+
+	var gqlResponse model.TwitchClipResponse
 	err = json.Unmarshal(responseBody, &gqlResponse)
+
 	if err != nil {
-		return model.TwitchGraphQLResponse{}, err
+		return model.TwitchClipResponse{}, err
 	}
 	return gqlResponse, nil
 }
 
 func (service *TwitchService) buildUsersRequest(user string) *http.Request {
+	log.Print("Building GET Users request for user: " + user)
 	request, _ := http.NewRequest("GET", twitchUsersAPI, nil)
 
 	queryParams := request.URL.Query()
@@ -74,6 +79,7 @@ func (service *TwitchService) buildUsersRequest(user string) *http.Request {
 }
 
 func (service *TwitchService) buildClipsRequest(broadcasterId string) *http.Request {
+	log.Print("Building GET Clips request for broadcaster: " + broadcasterId)
 	request, _ := http.NewRequest("GET", twitchClipsAPI, nil)
 
 	queryParams := request.URL.Query()

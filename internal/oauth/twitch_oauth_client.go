@@ -43,6 +43,7 @@ func (client *TwitchOAuthClient) FetchAppOAuth() (model.TwitchOAuthResponse, err
 	queryParams.Add("grant_type", "client_credentials")
 	request.URL.RawQuery = queryParams.Encode()
 
+	log.Print("Sending a POST request to fetch Twitch OAuth response")
 	resp, err := client.httpClient.Do(request)
 	if err != nil {
 		return model.TwitchOAuthResponse{}, err
