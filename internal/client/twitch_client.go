@@ -1,7 +1,9 @@
-package api
+package client
 
 import (
 	"errors"
+	"fmt"
+	"github.com/skhanal5/clip-farmer/internal/request"
 	"io"
 	"log"
 	"net/http"
@@ -19,8 +21,8 @@ func NewTwitchClient() *TwitchClient {
 	return client
 }
 
-func (client *TwitchClient) SendGetRequest(req *http.Request) ([]byte, error) {
-	resp, err := client.httpClient.Do(req)
+func (client *TwitchClient) SendRequest(req request.TwitchRequest) ([]byte, error) {
+	resp, err := client.httpClient.Do(req.Request)
 
 	if err != nil {
 		return nil, err
@@ -37,5 +39,6 @@ func (client *TwitchClient) SendGetRequest(req *http.Request) ([]byte, error) {
 		return nil, errors.New(string(body))
 	}
 
+	fmt.Println(string(body))
 	return body, nil
 }

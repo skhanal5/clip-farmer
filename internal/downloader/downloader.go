@@ -16,12 +16,19 @@ of it with a ".mp4" extension
 i.e., https://clips-media-assets2.twitch.tv/jTk1-Xmig5ji1Dll05ivnA/AT-cm%7CjTk1-Xmig5ji1Dll05ivnA-preview-260x147.jpg
 */
 
-func DownloadClips(clips []model.TwitchClip) {
+func DownloadClips(clips []model.TwitchClip) error {
+	err := os.Mkdir("clips", os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
 	for _, clip := range clips {
 		mp4Link := convertUrlToMp4(clip.ThumbnailURL)
 		downloadClip(mp4Link, clip.Id)
 	}
+	return nil
 }
+
+// TODO: Download in a separate goroutine, download only videos >= 30 seconds
 
 func downloadClip(mp4Link string, clipName string) {
 	req, _ := http.NewRequest("GET", mp4Link, nil)
@@ -32,12 +39,18 @@ func downloadClip(mp4Link string, clipName string) {
 		panic(err)
 	}
 
-	if res.Header.Get("Content-Type") == "video/mp4" {
-		// write file to local filesystem
-		file, err := os.Create(clipName + ".mp4")
-		defer res.Body.Close()
+	defer res.Body.Close()
+
+	if res.Header.Get("Content-Type") == "binary/octet-stream" {
+
+		file, err := os.Create("clips/" + clipName + ".mp4")
+		if err != nil {
+			panic(err)
+		}
 		defer file.Close()
+
 		log.Print("Downloading clip to local filesystem")
+
 		_, err = io.Copy(file, res.Body)
 		if err != nil {
 			panic(err)
