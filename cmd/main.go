@@ -7,14 +7,13 @@ import (
 )
 
 func main() {
-	configuration := config.LoadConfig()
+	configuration := config.NewConfig()
 
-	twitchService := service.NewTwitchService()
-	token := twitchService.FetchOAuth(configuration)
+	token := service.FetchTwitchOAuth(configuration)
 	configuration.SetTwitchBearerToken(token)
-	user := twitchService.FetchUsers("stableronaldo", configuration)
+	user := service.FetchUsers(configuration, "stableronaldo")
 	id := user.GetNthUser(0).Id
-	resp := twitchService.FetchUserClips(id, configuration)
+	resp := service.FetchUserClips(configuration, id)
 	err := downloader.DownloadClips(resp.Data)
 	if err != nil {
 		panic(err)

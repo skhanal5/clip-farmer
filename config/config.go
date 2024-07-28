@@ -7,21 +7,20 @@ import (
 )
 
 type Config struct {
-	TiktokApiKey       string
+	TiktokClientKey    string
+	TikTokClientSecret string
 	TwitchClientId     string
 	TwitchClientSecret string
 	TwitchOAuthConfig  model.TwitchOAuthResponse
 }
 
-func LoadConfig() Config {
+func NewConfig() Config {
 	log.Print("Loading environment variable")
-	tiktokAPIKey := os.Getenv("TIKTOK_API_KEY")
-	twitchClientId := os.Getenv("TWITCH_CLIENT_ID")
-	twitchClientSecret := os.Getenv("TWITCH_CLIENT_SECRET")
 	return Config{
-		tiktokAPIKey,
-		twitchClientId,
-		twitchClientSecret,
+		os.Getenv("TIKTOK_CLIENT_KEY"),
+		os.Getenv("TIKTOK_CLIENT_SECRET"),
+		os.Getenv("TWITCH_CLIENT_ID"),
+		os.Getenv("TWITCH_CLIENT_SECRET"),
 		model.TwitchOAuthResponse{},
 	}
 }

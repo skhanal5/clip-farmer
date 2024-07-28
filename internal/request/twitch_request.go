@@ -1,40 +1,52 @@
 package request
 
 import (
+	"github.com/skhanal5/clip-farmer/config"
 	"net/http"
 )
 
-type TwitchRequestData struct {
-	RequestURL  string
-	RequestType string
-	Query       map[string]string
-	Headers     map[string][]string
+const (
+	twitchClipsAPI      = "https://api.twitch.tv/helix/clips"
+	twitchUsersAPI      = "https://api.twitch.tv/helix/users"
+	twitchOAuthEndpoint = "https://id.twitch.tv/oauth2/token"
+)
+
+func BuildTwitchOAuthRequest(config config.Config) *http.Request {
+	data := RequestData{
+		RequestType:     POST,
+		RequestURL:      twitchOAuthEndpoint,
+		QueryParameters: map[string]string{"client_id": "", "client_secret": "", "grant_type": "client_credentials"},
+		Headers:         twitchAuthorizationHeaders(config),
+		RequestBody:     nil,
+	}
+	return data.ToHttpRequest()
 }
 
-type TwitchRequest struct {
-	Request *http.Request
+func BuildTwitchUserRequest(config config.Config, username string) *http.Request {
+	data := RequestData{
+		RequestType:     GET,
+		RequestURL:      twitchUsersAPI,
+		QueryParameters: map[string]string{"login": username},
+		Headers:         twitchAuthorizationHeaders(config),
+		RequestBody:     nil,
+	}
+	return data.ToHttpRequest()
 }
 
-func NewRequest(requestURL string, requestType string, query map[string]string, headers map[string][]string) TwitchRequestData {
-	return TwitchRequestData{
-		RequestURL:  requestURL,
-		RequestType: requestType,
-		Query:       query,
-		Headers:     headers,
+func BuildTwitchClipsRequest(config config.Config, broadcasterId string) *http.Request {
+	data := RequestData{
+		RequestType:     GET,
+		RequestURL:      twitchClipsAPI,
+		QueryParameters: map[string]string{"broadcaster_id": broadcasterId},
+		Headers:         twitchAuthorizationHeaders(config),
+		RequestBody:     nil,
 	}
+	return data.ToHttpRequest()
 }
 
-func (t *TwitchRequestData) BuildRequest() TwitchRequest {
-	req, _ := http.NewRequest(t.RequestType, t.RequestURL, nil)
-	if t.Headers != nil {
-		req.Header = t.Headers
-	}
-	queryParams := req.URL.Query()
-	for key, value := range t.Query {
-		queryParams.Add(key, value)
-	}
-	req.URL.RawQuery = queryParams.Encode()
-	return TwitchRequest{
-		Request: req,
-	}
+func twitchAuthorizationHeaders(config config.Config) map[string][]string {
+	headers := make(map[string][]string)
+	headers["Authorization"] = []string{"Bearer " + config.TwitchOAuthConfig.AccessToken}
+	headers["Client-Id"] = []string{config.TwitchClientId}
+	return headers
 }
