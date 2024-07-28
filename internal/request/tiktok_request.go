@@ -3,19 +3,18 @@ package request
 import (
 	"encoding/json"
 	"github.com/skhanal5/clip-farmer/config"
+	"github.com/skhanal5/clip-farmer/internal/server"
 	model "github.com/skhanal5/clip-farmer/model/tiktok"
 	"golang.org/x/oauth2"
 	"net/http"
 )
 
 const (
-	redirectUri = ""
-)
-
-const (
 	tiktokPostEndpoint  = "https://open.tiktokapis.com/v2/post/publish/video/init/"
 	tiktokOAuthEndpoint = "https://open.tiktokapis.com/v2/oauth/token/"
 	tiktokLoginEndpoint = "https://www.tiktok.com/v2/auth/authorize/"
+	redirectUri         = "http://localhost:8080/callback"
+	scope               = "user.info.basic,video.publish,video.upload"
 )
 
 func BuildTiktokLoginRequest(config config.Config) *http.Request {
@@ -68,9 +67,10 @@ func loginQueryParameters(config config.Config) map[string]string {
 	codeChallenge := oauth2.S256ChallengeFromVerifier(codeVerifier)
 
 	queryParams := make(map[string]string)
-	queryParams["client_key"] = config.TwitchClientSecret
-	queryParams["response_type"] = "code"
-	queryParams["redirect_uri"] = "redirect_uri"
+	queryParams["client_key"] = config.TiktokClientKey
+	queryParams["scope"] = scope
+	queryParams["response_type"] = server.Code
+	queryParams["redirect_uri"] = redirectUri
 	queryParams["state"] = "state"
 	queryParams["code_challenge"] = codeChallenge
 	queryParams["code_challenge_method"] = "S256"

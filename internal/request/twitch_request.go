@@ -15,7 +15,7 @@ func BuildTwitchOAuthRequest(config config.Config) *http.Request {
 	data := RequestData{
 		RequestType:     POST,
 		RequestURL:      twitchOAuthEndpoint,
-		QueryParameters: map[string]string{"client_id": "", "client_secret": "", "grant_type": "client_credentials"},
+		QueryParameters: map[string]string{"client_id": config.TwitchClientId, "client_secret": config.TwitchClientSecret, "grant_type": "client_credentials"},
 		Headers:         twitchAuthorizationHeaders(config),
 		RequestBody:     nil,
 	}

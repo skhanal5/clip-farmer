@@ -2,7 +2,6 @@ package client
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 )
@@ -26,7 +25,5 @@ func SendRequest(req *http.Request) ([]byte, error) {
 	if resp.StatusCode != 200 {
 		return nil, errors.New(string(body))
 	}
-
-	fmt.Println(string(body))
 	return body, nil
 }
