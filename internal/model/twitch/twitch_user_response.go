@@ -1,4 +1,4 @@
-package twitchmodel
+package twitch
 
 // TwitchUserResponse is a GraphQL response
 // to the Twitch Get Users API

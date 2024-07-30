@@ -1,4 +1,4 @@
-package tiktokmodel
+package tiktok
 
 type TikTokOAuthRequestBody struct {
 	ClientKey    string `json:"client_key"`

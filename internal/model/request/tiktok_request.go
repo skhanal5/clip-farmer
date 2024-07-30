@@ -1,11 +1,10 @@
-package tiktokrequest
+package request
 
 import (
 	"encoding/json"
 	"github.com/skhanal5/clip-farmer/internal/config"
-	"github.com/skhanal5/clip-farmer/internal/datamodel"
+	"github.com/skhanal5/clip-farmer/internal/model/tiktok"
 	"github.com/skhanal5/clip-farmer/internal/server"
-	"github.com/skhanal5/clip-farmer/internal/tiktokmodel"
 	"golang.org/x/oauth2"
 	"net/http"
 )
@@ -21,7 +20,7 @@ const (
 )
 
 func BuildTiktokLoginRequest(config config.Config) *http.Request {
-	data := datamodel.RequestData{
+	data := RequestData{
 		RequestType:     POST,
 		RequestURL:      tiktokLoginEndpoint,
 		QueryParameters: loginQueryParameters(config),
@@ -33,7 +32,7 @@ func BuildTiktokLoginRequest(config config.Config) *http.Request {
 
 func BuildTikTokOAuthRequest(config config.Config, code string) *http.Request {
 	// must be urlencoded
-	body := tiktokmodel.TikTokOAuthRequestBody{
+	body := tiktok.TikTokOAuthRequestBody{
 		ClientKey:    config.TiktokClientKey,
 		ClientSecret: config.TikTokClientSecret,
 		Code:         code,
@@ -44,8 +43,8 @@ func BuildTikTokOAuthRequest(config config.Config, code string) *http.Request {
 
 	bodyJson, _ := json.Marshal(body)
 
-	data := datamodel.RequestData{
-		RequestType:     datamodel.POST,
+	data := RequestData{
+		RequestType:     POST,
 		RequestURL:      tiktokOAuthEndpoint,
 		QueryParameters: nil,
 		Headers:         tiktokLoginHeaders(),

@@ -1,4 +1,4 @@
-package twitchmodel
+package twitch
 
 // TwitchClipResponse is a GraphQL response
 // to the Twitch Get Clips API

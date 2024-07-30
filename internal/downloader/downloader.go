@@ -2,7 +2,7 @@ package downloader
 
 import (
 	"fmt"
-	"github.com/skhanal5/clip-farmer/internal/twitchmodel"
+	"github.com/skhanal5/clip-farmer/internal/model/twitch"
 	"io"
 	"log"
 	"net/http"
@@ -17,7 +17,7 @@ of it with a ".mp4" extension
 i.e., https://clips-media-assets2.twitch.tv/jTk1-Xmig5ji1Dll05ivnA/AT-cm%7CjTk1-Xmig5ji1Dll05ivnA-preview-260x147.jpg
 */
 
-func DownloadClips(clips []twitchmodel.TwitchClip) error {
+func DownloadClips(clips []twitch.TwitchClip) error {
 	err := os.Mkdir("clips", os.ModePerm)
 	if err != nil {
 		panic(err)

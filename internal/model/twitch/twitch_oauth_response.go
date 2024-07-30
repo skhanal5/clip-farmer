@@ -1,4 +1,4 @@
-package twitchmodel
+package twitch
 
 type TwitchOAuthResponse struct {
 	AccessToken string `json:"access_token"`

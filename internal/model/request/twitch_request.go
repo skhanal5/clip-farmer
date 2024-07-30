@@ -1,8 +1,7 @@
-package twitchrequest
+package request
 
 import (
 	"github.com/skhanal5/clip-farmer/internal/config"
-	"github.com/skhanal5/clip-farmer/internal/datamodel"
 	"net/http"
 )
 
@@ -13,8 +12,8 @@ const (
 )
 
 func BuildTwitchOAuthRequest(config config.Config) *http.Request {
-	data := datamodel.RequestData{
-		RequestType:     datamodel.POST,
+	data := RequestData{
+		RequestType:     POST,
 		RequestURL:      twitchOAuthEndpoint,
 		QueryParameters: map[string]string{"client_id": config.TwitchClientId, "client_secret": config.TwitchClientSecret, "grant_type": "client_credentials"},
 		Headers:         twitchAuthorizationHeaders(config),
@@ -24,8 +23,8 @@ func BuildTwitchOAuthRequest(config config.Config) *http.Request {
 }
 
 func BuildTwitchUserRequest(config config.Config, username string) *http.Request {
-	data := datamodel.RequestData{
-		RequestType:     datamodel.GET,
+	data := RequestData{
+		RequestType:     GET,
 		RequestURL:      twitchUsersAPI,
 		QueryParameters: map[string]string{"login": username},
 		Headers:         twitchAuthorizationHeaders(config),
@@ -35,8 +34,8 @@ func BuildTwitchUserRequest(config config.Config, username string) *http.Request
 }
 
 func BuildTwitchClipsRequest(config config.Config, broadcasterId string) *http.Request {
-	data := datamodel.RequestData{
-		RequestType:     datamodel.GET,
+	data := RequestData{
+		RequestType:     GET,
 		RequestURL:      twitchClipsAPI,
 		QueryParameters: map[string]string{"broadcaster_id": broadcasterId},
 		Headers:         twitchAuthorizationHeaders(config),

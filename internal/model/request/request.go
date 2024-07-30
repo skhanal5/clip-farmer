@@ -1,16 +1,11 @@
-package datamodel
+package request
 
 import (
 	"bytes"
 	"net/http"
 )
 
-const (
-	GET  = "GET"
-	POST = "POST"
-)
-
-// RequestData represents all the datamodel details we will pass in
+// RequestData represents all the request details we will pass in
 type RequestData struct {
 	RequestType     string
 	RequestURL      string

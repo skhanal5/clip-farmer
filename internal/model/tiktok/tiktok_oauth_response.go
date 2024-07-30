@@ -1,4 +1,4 @@
-package tiktokmodel
+package tiktok
 
 type TikTokOAuthResponse struct {
 	AccessToken      string `json:"access_token"`

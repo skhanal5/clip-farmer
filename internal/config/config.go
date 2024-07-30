@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/skhanal5/clip-farmer/internal/twitchmodel"
+	"github.com/skhanal5/clip-farmer/internal/model/twitch"
 	"log"
 	"os"
 )
@@ -11,7 +11,7 @@ type Config struct {
 	TikTokClientSecret string
 	TwitchClientId     string
 	TwitchClientSecret string
-	TwitchOAuthConfig  twitchmodel.TwitchOAuthResponse
+	TwitchOAuthConfig  twitch.TwitchOAuthResponse
 }
 
 func NewConfig() Config {
@@ -21,10 +21,10 @@ func NewConfig() Config {
 		os.Getenv("TIKTOK_CLIENT_SECRET"),
 		os.Getenv("TWITCH_CLIENT_ID"),
 		os.Getenv("TWITCH_CLIENT_SECRET"),
-		twitchmodel.TwitchOAuthResponse{},
+		twitch.TwitchOAuthResponse{},
 	}
 }
 
-func (config *Config) SetTwitchBearerToken(oauthResponse twitchmodel.TwitchOAuthResponse) {
+func (config *Config) SetTwitchBearerToken(oauthResponse twitch.TwitchOAuthResponse) {
 	config.TwitchOAuthConfig = oauthResponse
 }
