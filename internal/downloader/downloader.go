@@ -1,6 +1,7 @@
 package downloader
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/skhanal5/clip-farmer/internal/model/twitch"
 	"io"
@@ -58,6 +59,22 @@ func downloadClip(mp4Link string, clipName string) {
 			panic(err)
 		}
 	}
+}
+
+func ParseSourceURL(token twitch.PlaybackAccessToken) {
+
+}
+
+func BuildDownloadLink(token twitch.PlaybackAccessToken) string {
+	baseURL := "https://production.assets.clips.twitchcdn.net/AT-cm|%s.mp4?sig=%s\\&token={\"authorization\":{\"forbidden\":false,\"reason\":\"\"},\"clip_uri\":\"\",\"device_id\":\"%s\",\"expires\":%s,\"user_id\":\"%s\",\"version\":2}"
+
+	var valueTok twitch.Value
+	value := token.Value
+	json.Unmarshal([]byte(value), &valueTok)
+	clipId := s.Split(valueTok.ClipURI, "%7")[1]
+
+	fullURL := fmt.Sprintf(baseURL, clipId, token.Signature, valueTok.DeviceId, valueTok.Expires, valueTok.UserId)
+	return fullURL
 }
 
 func convertUrlToMp4(clip string) string {

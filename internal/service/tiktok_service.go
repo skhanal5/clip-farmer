@@ -1,4 +1,4 @@
-package server
+package service
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"github.com/skhanal5/clip-farmer/internal/config"
 	"github.com/skhanal5/clip-farmer/internal/model/request"
 	"github.com/skhanal5/clip-farmer/internal/model/tiktok"
+	"github.com/skhanal5/clip-farmer/internal/server"
 	"log"
 	"sync"
 )
@@ -21,7 +22,7 @@ func LoginIntoTargetUser(config config.Config) {
 	}
 	serverDone := &sync.WaitGroup{}
 	serverDone.Add(1)
-	StartServer(serverDone)
+	server.StartServer(serverDone)
 	serverDone.Wait()
 }
 

@@ -41,15 +41,31 @@ func FetchUsers(config config.Config, username string) twitch.TwitchUserResponse
 	return gqlResponse
 }
 
-func FetchUserClips(config config.Config, broadcasterId string) twitch.TwitchClipResponse {
-	clipsRequest := request.BuildTwitchClipsRequest(config, broadcasterId)
+func FetchUser(config config.Config, username string) twitch.UserResponse {
+	userRequest := request.BuildGQLTwitchUserRequest(username, config)
+	log.Print("Invoking GET Users")
+	body, err := client.SendRequest(userRequest)
+	if err != nil {
+		panic(err)
+	}
+
+	var gqlResponse twitch.UserResponse
+	err = json.Unmarshal(body, &gqlResponse)
+	if err != nil {
+		panic(err)
+	}
+	return gqlResponse
+}
+
+func FetchClipDownloadInfo(config config.Config, clipId string) twitch.ClipDownloadResponse {
+	clipsRequest := request.BuildTwitchClipDownloadRequest(clipId, config)
 	log.Print("Invoking GET Clips")
 	responseBody, err := client.SendRequest(clipsRequest)
 	if err != nil {
 		panic(err)
 	}
 
-	var gqlResponse twitch.TwitchClipResponse
+	var gqlResponse twitch.ClipDownloadResponse
 	err = json.Unmarshal(responseBody, &gqlResponse)
 
 	if err != nil {
