@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/skhanal5/clip-farmer/internal/client"
 	"github.com/skhanal5/clip-farmer/internal/config"
-	"github.com/skhanal5/clip-farmer/internal/model/request"
-	"github.com/skhanal5/clip-farmer/internal/model/tiktok"
+	model "github.com/skhanal5/clip-farmer/internal/model/tiktok"
+	"github.com/skhanal5/clip-farmer/internal/request"
 	"github.com/skhanal5/clip-farmer/internal/server"
 	"log"
 	"sync"
@@ -26,14 +26,14 @@ func LoginIntoTargetUser(config config.Config) {
 	serverDone.Wait()
 }
 
-func FetchTikTokOAuth(config config.Config) tiktok.TikTokOAuthResponse {
+func FetchTikTokOAuth(config config.Config) model.TikTokOAuthResponse {
 	loginRequest := request.BuildTiktokLoginRequest(config)
 	log.Print("Invoking TikTok Login request")
 	responseBody, err := client.SendRequest(loginRequest)
 	if err != nil {
 		panic(err)
 	}
-	var oauthResponse tiktok.TikTokOAuthResponse
+	var oauthResponse model.TikTokOAuthResponse
 	err = json.Unmarshal(responseBody, &oauthResponse)
 	if err != nil {
 		panic(err)

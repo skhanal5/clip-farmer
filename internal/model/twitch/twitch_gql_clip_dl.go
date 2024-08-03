@@ -1,4 +1,4 @@
-package twitch
+package model
 
 type ClipDownloadResponse struct {
 	Data       ClipData   `json:"data"`
@@ -23,13 +23,13 @@ type PlaybackAccessToken struct {
 }
 
 type Value struct {
-	Authorization map[string]string `json:"authorization"`
-	ClipURI       string            `json:"clip_uri"`
-	ClipSlug      string            `json:"clip_slug"`
-	DeviceId      *string           `json:"device_id"`
-	Expires       int64             `json:"expires"`
-	UserId        string            `json:"user_id"`
-	Version       int64             `json:"version"`
+	Authorization map[string]any `json:"authorization"`
+	ClipURI       string         `json:"clip_uri"`
+	ClipSlug      string         `json:"clip_slug"`
+	DeviceId      string         `json:"device_id"`
+	Expires       int64          `json:"expires"`
+	UserId        string         `json:"user_id"`
+	Version       int64          `json:"version"`
 }
 
 type VideoQualities struct {

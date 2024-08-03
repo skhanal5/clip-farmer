@@ -4,44 +4,12 @@ import (
 	"encoding/json"
 	"github.com/skhanal5/clip-farmer/internal/client"
 	"github.com/skhanal5/clip-farmer/internal/config"
-	"github.com/skhanal5/clip-farmer/internal/model/request"
-	"github.com/skhanal5/clip-farmer/internal/model/twitch"
+	model "github.com/skhanal5/clip-farmer/internal/model/twitch"
+	"github.com/skhanal5/clip-farmer/internal/request"
 	"log"
 )
 
-func FetchTwitchOAuth(config config.Config) twitch.TwitchOAuthResponse {
-	oauthRequest := request.BuildTwitchOAuthRequest(config)
-	log.Print("Invoking Twitch OAuth request")
-	responseBody, err := client.SendRequest(oauthRequest)
-	if err != nil {
-		panic(err)
-	}
-	var oauthResponse twitch.TwitchOAuthResponse
-	err = json.Unmarshal(responseBody, &oauthResponse)
-	if err != nil {
-		panic(err)
-	}
-	return oauthResponse
-}
-
-func FetchUsers(config config.Config, username string) twitch.TwitchUserResponse {
-	userRequest := request.BuildTwitchUserRequest(config, username)
-	log.Print("Invoking GET Users")
-	body, err := client.SendRequest(userRequest)
-	if err != nil {
-		panic(err)
-	}
-
-	var gqlResponse twitch.TwitchUserResponse
-	err = json.Unmarshal(body, &gqlResponse)
-	if err != nil {
-		panic(err)
-	}
-
-	return gqlResponse
-}
-
-func FetchUser(config config.Config, username string) twitch.UserResponse {
+func FetchUser(config config.Config, username string) model.UserResponse {
 	userRequest := request.BuildGQLTwitchUserRequest(username, config)
 	log.Print("Invoking GET Users")
 	body, err := client.SendRequest(userRequest)
@@ -49,7 +17,7 @@ func FetchUser(config config.Config, username string) twitch.UserResponse {
 		panic(err)
 	}
 
-	var gqlResponse twitch.UserResponse
+	var gqlResponse model.UserResponse
 	err = json.Unmarshal(body, &gqlResponse)
 	if err != nil {
 		panic(err)
@@ -57,7 +25,7 @@ func FetchUser(config config.Config, username string) twitch.UserResponse {
 	return gqlResponse
 }
 
-func FetchClipDownloadInfo(config config.Config, clipId string) twitch.ClipDownloadResponse {
+func FetchClipDownloadInfo(config config.Config, clipId string) model.ClipDownloadResponse {
 	clipsRequest := request.BuildTwitchClipDownloadRequest(clipId, config)
 	log.Print("Invoking GET Clips")
 	responseBody, err := client.SendRequest(clipsRequest)
@@ -65,7 +33,7 @@ func FetchClipDownloadInfo(config config.Config, clipId string) twitch.ClipDownl
 		panic(err)
 	}
 
-	var gqlResponse twitch.ClipDownloadResponse
+	var gqlResponse model.ClipDownloadResponse
 	err = json.Unmarshal(responseBody, &gqlResponse)
 
 	if err != nil {

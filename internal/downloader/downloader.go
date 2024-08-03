@@ -3,83 +3,89 @@ package downloader
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/skhanal5/clip-farmer/internal/model/twitch"
+	model "github.com/skhanal5/clip-farmer/internal/model/twitch"
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
-	s "strings"
+	"time"
 )
 
-/*
-Given a thumbnail url, replace the preview portion
-of it with a ".mp4" extension
+const (
+	connectTimeout = 30 * time.Second
+	chunkSize      = 1024 * 1024 // 1 MB chunk size
+	downloadDelay  = 5 * time.Second
+)
 
-i.e., https://clips-media-assets2.twitch.tv/jTk1-Xmig5ji1Dll05ivnA/AT-cm%7CjTk1-Xmig5ji1Dll05ivnA-preview-260x147.jpg
-*/
-
-func DownloadClips(clips []twitch.TwitchClip) error {
-	err := os.Mkdir("clips", os.ModePerm)
+func DownloadClips(username string, clips []model.Clip) error {
+	path := "clips/" + username
+	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(len(clips))
 	for _, clip := range clips {
-		mp4Link := convertUrlToMp4(clip.ThumbnailURL)
-		downloadClip(mp4Link, clip.Id)
+		mp4Link := buildDownloadLink(clip)
+		fmt.Println(mp4Link)
+		//downloadClip(mp4Link, clip.ID, path)
+		time.Sleep(downloadDelay)
 	}
 	return nil
 }
 
-// TODO: Download in a separate goroutine, download only videos >= 30 seconds
-
-func downloadClip(mp4Link string, clipName string) {
-	req, _ := http.NewRequest("GET", mp4Link, nil)
-	client := http.Client{}
-	res, err := client.Do(req)
-
+func downloadClip(downloadURL string, clipName string, path string) {
+	filepath := path + clipName + ".mp4"
+	client := http.Client{
+		Timeout: connectTimeout,
+	}
+	resp, err := client.Get(downloadURL)
 	if err != nil {
 		panic(err)
 	}
+	defer resp.Body.Close()
 
-	defer res.Body.Close()
+	file, err := os.Create(filepath)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
 
-	if res.Header.Get("Content-Type") == "binary/octet-stream" {
+	log.Print("Downloading clip to local filesystem")
 
-		file, err := os.Create("clips/" + clipName + ".mp4")
+	size := int64(0)
+	buf := make([]byte, chunkSize)
+	for {
+		n, err := resp.Body.Read(buf)
+		if err != nil && err != io.EOF {
+			panic(err)
+		}
+		if n == 0 {
+			break
+		}
+
+		_, err = file.Write(buf[:n])
 		if err != nil {
 			panic(err)
 		}
-		defer file.Close()
-
-		log.Print("Downloading clip to local filesystem")
-
-		_, err = io.Copy(file, res.Body)
-		if err != nil {
-			panic(err)
-		}
+		size += int64(n)
 	}
 }
+func buildDownloadLink(clip model.Clip) string {
 
-func ParseSourceURL(token twitch.PlaybackAccessToken) {
+	token := clip.PlaybackAccessToken
+	var valueTok model.Value
+	err := json.Unmarshal([]byte(token.Value), &valueTok)
+	if err != nil {
+		panic("Error unmarshaling JSON: " + err.Error())
+	}
 
-}
+	// Build URL parameters
+	params := url.Values{}
+	params.Set("response-content-disposition", "attachment")
+	params.Set("sig", token.Signature)
+	params.Set("token", token.Value)
 
-func BuildDownloadLink(token twitch.PlaybackAccessToken) string {
-	baseURL := "https://production.assets.clips.twitchcdn.net/AT-cm|%s.mp4?sig=%s\\&token={\"authorization\":{\"forbidden\":false,\"reason\":\"\"},\"clip_uri\":\"\",\"device_id\":\"%s\",\"expires\":%s,\"user_id\":\"%s\",\"version\":2}"
-
-	var valueTok twitch.Value
-	value := token.Value
-	json.Unmarshal([]byte(value), &valueTok)
-	clipId := s.Split(valueTok.ClipURI, "%7")[1]
-
-	fullURL := fmt.Sprintf(baseURL, clipId, token.Signature, valueTok.DeviceId, valueTok.Expires, valueTok.UserId)
-	return fullURL
-}
-
-func convertUrlToMp4(clip string) string {
-	index := s.Index(clip, "-preview")
-	rawUrl := clip[:index]
-	rawUrl += ".mp4"
-	return rawUrl
+	// Construct the final URL
+	finalURL := fmt.Sprintf("%s?%s", valueTok.ClipURI, params.Encode())
+	return finalURL
 }

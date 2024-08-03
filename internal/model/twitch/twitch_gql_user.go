@@ -1,4 +1,4 @@
-package twitch
+package model
 
 type UserResponse struct {
 	Data       UserData   `json:"data"`
