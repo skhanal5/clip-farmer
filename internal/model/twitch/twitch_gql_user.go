@@ -1,8 +1,8 @@
 package model
 
 type UserResponse struct {
-	Data       UserData   `json:"data"`
-	Extensions Extensions `json:"extensions"`
+	Data       UserData           `json:"data"`
+	Extensions ResponseExtensions `json:"extensions"`
 }
 
 type UserData struct {

@@ -30,7 +30,7 @@ func FetchAndDownloadClips(config config.Config) {
 
 func fetchUser(config config.Config) model.UserResponse {
 	userRequest := request.BuildGQLTwitchUserRequest(config.TwitchTargetCreator, config)
-	log.Print("Invoking GET Users")
+	log.Print("Getting user: " + config.TwitchTargetCreator + " through Twitch GQL API")
 	body, err := client.SendRequest(userRequest)
 	if err != nil {
 		panic(err)
@@ -46,7 +46,7 @@ func fetchUser(config config.Config) model.UserResponse {
 
 func fetchClipDownloadInfo(config config.Config, clipId string) model.ClipDownloadResponse {
 	clipsRequest := request.BuildTwitchClipDownloadRequest(clipId, config)
-	log.Print("Invoking GET Clips")
+	log.Print("Getting clip download info for clip with id: " + clipId + " through Twitch GQL API")
 	responseBody, err := client.SendRequest(clipsRequest)
 	if err != nil {
 		panic(err)

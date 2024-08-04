@@ -7,5 +7,5 @@ import (
 
 func main() {
 	configuration := config.NewConfig()
-	manager.FetchTiktokOAuth(configuration)
+	manager.FetchAndDownloadClips(configuration)
 }
