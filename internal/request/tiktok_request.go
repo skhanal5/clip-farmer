@@ -1,12 +1,10 @@
 package request
 
 import (
-	"encoding/json"
 	"github.com/skhanal5/clip-farmer/internal/config"
-	model "github.com/skhanal5/clip-farmer/internal/model/tiktok"
-	"github.com/skhanal5/clip-farmer/internal/server"
-	"golang.org/x/oauth2"
 	"net/http"
+	"net/url"
+	"strings"
 )
 
 const (
@@ -19,59 +17,43 @@ const (
 	POST                = "POST"
 )
 
-func BuildTiktokLoginRequest(config config.Config) *http.Request {
-	data := RequestData{
-		RequestType:     POST,
-		RequestURL:      tiktokLoginEndpoint,
-		QueryParameters: loginQueryParameters(config),
-		Headers:         tiktokLoginHeaders(),
-		RequestBody:     nil,
-	}
-	return data.ToHttpRequest()
+func BuildTikTokAuthorizationRequest(config config.Config, codeVerifier string) *http.Request {
+	queryParams := loginQueryParameters(config, codeVerifier)
+	headers := buildTikTokHeaders()
+	return ToHttpRequest(POST, tiktokLoginEndpoint, queryParams, headers, nil)
 }
 
-func BuildTikTokOAuthRequest(config config.Config, code string) *http.Request {
+func BuildTikTokOAuthRequest(config config.Config, code string, codeVerifier string) *http.Request {
+	oauthBody := buildTikTokOAuthBody(config, code, codeVerifier)
+	headers := buildTikTokHeaders()
+	return ToHttpRequest(POST, tiktokOAuthEndpoint, make(map[string]string), headers, oauthBody)
+}
+
+func buildTikTokOAuthBody(config config.Config, code string, codeVerifier string) *strings.Reader {
 	// must be urlencoded
-	body := model.TikTokOAuthRequestBody{
-		ClientKey:    config.TiktokClientKey,
-		ClientSecret: config.TikTokClientSecret,
-		Code:         code,
-		GrantType:    "authorization_code",
-		RedirectUri:  redirectUri,
-		CodeVerifier: oauth2.GenerateVerifier(),
-	}
-
-	bodyJson, _ := json.Marshal(body)
-
-	data := RequestData{
-		RequestType:     POST,
-		RequestURL:      tiktokOAuthEndpoint,
-		QueryParameters: nil,
-		Headers:         tiktokLoginHeaders(),
-		RequestBody:     bodyJson,
-	}
-	return data.ToHttpRequest()
+	body := url.Values{}
+	body.Add("client_key", config.TiktokClientKey)
+	body.Add("client_secret", config.TikTokClientSecret)
+	body.Add("code", code)
+	body.Add("grant_type", "authorization_code")
+	body.Add("redirect_uri", redirectUri)
+	body.Add("code_verifier", codeVerifier)
+	encoded := strings.NewReader(body.Encode())
+	return encoded
 }
 
-func BuildTikTokContentRequest(config config.Config) {
-
-}
-
-func tiktokLoginHeaders() map[string][]string {
+func buildTikTokHeaders() map[string][]string {
 	headers := map[string][]string{}
 	headers["Content-Type"] = []string{"application/x-www-form-urlencoded"}
 	headers["Cache-Control"] = []string{"no-cache"}
 	return headers
 }
 
-func loginQueryParameters(config config.Config) map[string]string {
-	codeVerifier := oauth2.GenerateVerifier()
-	codeChallenge := oauth2.S256ChallengeFromVerifier(codeVerifier)
-
+func loginQueryParameters(config config.Config, codeChallenge string) map[string]string {
 	queryParams := make(map[string]string)
 	queryParams["client_key"] = config.TiktokClientKey
 	queryParams["scope"] = scope
-	queryParams["response_type"] = server.Code
+	queryParams["response_type"] = "code"
 	queryParams["redirect_uri"] = redirectUri
 	queryParams["state"] = "state"
 	queryParams["code_challenge"] = codeChallenge

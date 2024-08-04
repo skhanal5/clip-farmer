@@ -18,23 +18,22 @@ const (
 	downloadDelay  = 5 * time.Second
 )
 
-func DownloadClips(username string, clips []model.Clip) error {
-	path := "clips/" + username
-	err := os.MkdirAll(path, os.ModePerm)
+func DownloadClips(path string, clips []model.Clip) {
+	directoryPath := "clips/" + path
+	err := os.MkdirAll(directoryPath, os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
 	for _, clip := range clips {
-		mp4Link := buildDownloadLink(clip)
+		mp4Link := buildClipDownloadURL(clip)
 		fmt.Println(mp4Link)
 		//downloadClip(mp4Link, clip.ID, path)
 		time.Sleep(downloadDelay)
 	}
-	return nil
 }
 
-func downloadClip(downloadURL string, clipName string, path string) {
-	filepath := path + clipName + ".mp4"
+func downloadClip(downloadURL string, clipName string, directoryPath string) {
+	filepath := directoryPath + clipName + ".mp4"
 	client := http.Client{
 		Timeout: connectTimeout,
 	}
@@ -50,7 +49,7 @@ func downloadClip(downloadURL string, clipName string, path string) {
 	}
 	defer file.Close()
 
-	log.Print("Downloading clip to local filesystem")
+	log.Print("Downloading clip " + filepath + " to local filesystem")
 
 	size := int64(0)
 	buf := make([]byte, chunkSize)
@@ -70,13 +69,13 @@ func downloadClip(downloadURL string, clipName string, path string) {
 		size += int64(n)
 	}
 }
-func buildDownloadLink(clip model.Clip) string {
-
+func buildClipDownloadURL(clip model.Clip) string {
+	log.Print("Making download url for clip with id: " + clip.ID)
 	token := clip.PlaybackAccessToken
 	var valueTok model.Value
 	err := json.Unmarshal([]byte(token.Value), &valueTok)
 	if err != nil {
-		panic("Error unmarshaling JSON: " + err.Error())
+		panic("Error unmarshalling JSON: " + err.Error())
 	}
 
 	// Build URL parameters
