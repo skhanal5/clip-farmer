@@ -13,11 +13,11 @@ const (
 )
 
 func BuildTwitchClipDownloadRequest(clipSlug string, config config.Config) *http.Request {
-	return ToHttpRequest(POST, twitchGQLAPI, nil, twitchAuthorizationHeadersGQL(config), buildGQLClipsRequestBody(clipSlug))
+	return toHttpRequest(POST, twitchGQLAPI, nil, twitchAuthorizationHeadersGQL(config), buildGQLClipsRequestBody(clipSlug))
 }
 
 func BuildGQLTwitchUserRequest(username string, config config.Config) *http.Request {
-	return ToHttpRequest(POST, twitchGQLAPI, nil, twitchAuthorizationHeadersGQL(config), buildUserReq(username))
+	return toHttpRequest(POST, twitchGQLAPI, nil, twitchAuthorizationHeadersGQL(config), buildUserReq(username))
 }
 
 func buildUserReq(username string) *bytes.Buffer {

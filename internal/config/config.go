@@ -34,6 +34,7 @@ func NewConfig() Config {
 		viper.GetString("query.twitch-creator"),
 	}
 }
+
 func (c *Config) SetTikTokOAuth(oauth model.TikTokOAuthResponse) {
 	c.TikTokOAuth = oauth
 }

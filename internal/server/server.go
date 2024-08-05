@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"sync"
@@ -18,12 +17,11 @@ func StartCallbackServer(wg *sync.WaitGroup, codeCh chan<- string) {
 	mux.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
 		select {
 		case <-ctxShutdown.Done():
-			fmt.Println("Sorry: Shutting down ...")
+			log.Println("Shutting down callback server")
 			return
 		default:
 		}
 		code := r.URL.Query().Get("code")
-		fmt.Println(code)
 		if code == "" {
 			panic(errors.New("code and/or scope not received, authorization failed"))
 		} else {

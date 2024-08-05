@@ -14,7 +14,7 @@ import (
 
 const (
 	connectTimeout = 30 * time.Second
-	chunkSize      = 1024 * 1024 // 1 MB chunk size
+	chunkSize      = 1024 * 1024
 	downloadDelay  = 5 * time.Second
 )
 
@@ -26,14 +26,13 @@ func DownloadClips(path string, clips []model.Clip) {
 	}
 	for _, clip := range clips {
 		mp4Link := buildClipDownloadURL(clip)
-		fmt.Println(mp4Link)
-		//downloadClip(mp4Link, clip.ID, path)
+		downloadClip(mp4Link, path+clip.ID, directoryPath)
 		time.Sleep(downloadDelay)
 	}
 }
 
 func downloadClip(downloadURL string, clipName string, directoryPath string) {
-	filepath := directoryPath + clipName + ".mp4"
+	filepath := directoryPath + "/" + clipName + ".mp4"
 	client := http.Client{
 		Timeout: connectTimeout,
 	}
@@ -44,6 +43,7 @@ func downloadClip(downloadURL string, clipName string, directoryPath string) {
 	defer resp.Body.Close()
 
 	file, err := os.Create(filepath)
+
 	if err != nil {
 		panic(err)
 	}
@@ -78,13 +78,11 @@ func buildClipDownloadURL(clip model.Clip) string {
 		panic("Error unmarshalling JSON: " + err.Error())
 	}
 
-	// Build URL parameters
 	params := url.Values{}
 	params.Set("response-content-disposition", "attachment")
 	params.Set("sig", token.Signature)
 	params.Set("token", token.Value)
 
-	// Construct the final URL
 	finalURL := fmt.Sprintf("%s?%s", valueTok.ClipURI, params.Encode())
 	return finalURL
 }

@@ -16,11 +16,32 @@ import (
 	"sync"
 )
 
-func FetchTiktokOAuth(config config.Config) model.TikTokOAuthResponse {
+func FetchQueryCreatorInfo(config config.Config) model.CreatorInfoResponse {
+	creatorInfoReq := request.BuildTikTokQueryCreatorInfoRequest(config)
+	fmt.Println(creatorInfoReq)
+	res, err := client.SendRequest(creatorInfoReq)
+	if err != nil {
+		panic(err)
+	}
+	var creatorInfoRes model.CreatorInfoResponse
+	fmt.Println(string(res))
+	err = json.Unmarshal(res, &creatorInfoRes)
+	if err != nil {
+		panic(err)
+	}
+	return creatorInfoRes
+}
+
+func FetchTiktokOAuth(config config.Config) {
+	if config.TikTokOAuth.AccessToken != "" {
+		return
+	}
 	codeVerifier := generateCodeVerifier(64)
 	codeChallenge := generateRawCodeChallenge(codeVerifier)
 	code := authenticateTikTokUser(config, codeChallenge)
-	return sendTikTokOAuthRequest(config, code, codeVerifier)
+	oauth := sendTikTokOAuthRequest(config, code, codeVerifier)
+	config.SetTikTokOAuth(oauth)
+	oauth.WriteToFile()
 }
 
 func generateCodeVerifier(length int) string {
@@ -34,23 +55,16 @@ func generateCodeVerifier(length int) string {
 }
 
 func generateRawCodeChallenge(codeVerifier string) string {
-	// Compute SHA-256 hash
 	hash := sha256.New()
 	hash.Write([]byte(codeVerifier))
 	hashBytes := hash.Sum(nil)
-
-	// Convert hash bytes to a raw hexadecimal string
 	return fmt.Sprintf("%x", hashBytes)
 }
 
 func authenticateTikTokUser(config config.Config, codeChallenge string) string {
-	loginRequest := request.BuildTikTokAuthorizationRequest(config, codeChallenge)
+	authRequest := request.BuildTikTokAuthorizationRequest(config, codeChallenge)
 	log.Print("Invoking TikTok Login request")
-	fmt.Println(loginRequest)
-	_, err := client.SendRequest(loginRequest)
-	if err != nil {
-		panic(err)
-	}
+	fmt.Println(authRequest.URL.String())
 	codeChan := make(chan string)
 	serverDone := &sync.WaitGroup{}
 	serverDone.Add(1)
@@ -60,10 +74,9 @@ func authenticateTikTokUser(config config.Config, codeChallenge string) string {
 }
 
 func sendTikTokOAuthRequest(config config.Config, code string, codeVerifier string) model.TikTokOAuthResponse {
-	loginRequest := request.BuildTikTokOAuthRequest(config, code, codeVerifier)
-	log.Print("Invoking TikTok Login request")
-	fmt.Println(loginRequest)
-	responseBody, err := client.SendRequest(loginRequest)
+	oauthReq := request.BuildTikTokOAuthRequest(config, code, codeVerifier)
+	log.Print("Invoking TikTok OAuth request")
+	responseBody, err := client.SendRequest(oauthReq)
 	if err != nil {
 		panic(err)
 	}

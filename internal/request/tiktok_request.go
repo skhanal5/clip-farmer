@@ -8,25 +8,30 @@ import (
 )
 
 const (
-	tiktokPostEndpoint  = "https://open.tiktokapis.com/v2/post/publish/video/init/"
-	tiktokOAuthEndpoint = "https://open.tiktokapis.com/v2/oauth/token/"
-	tiktokLoginEndpoint = "https://www.tiktok.com/v2/auth/authorize/"
-	redirectUri         = "http://localhost:8080/callback"
-	scope               = "user.info.basic,video.publish,video.upload"
-	GET                 = "GET"
-	POST                = "POST"
+	tiktokQueryCreatorInfoEndpoint = "https://open.tiktokapis.com/v2/post/publish/creator_info/query/"
+	tiktokPostEndpoint             = "https://open.tiktokapis.com/v2/post/publish/video/init/"
+	tiktokOAuthEndpoint            = "https://open.tiktokapis.com/v2/oauth/token/"
+	tiktokLoginEndpoint            = "https://www.tiktok.com/v2/auth/authorize/"
+	redirectUri                    = "http://localhost:8080/callback"
+	scope                          = "user.info.basic,video.publish,video.upload"
 )
+
+func BuildTikTokQueryCreatorInfoRequest(config config.Config) *http.Request {
+	headers := map[string][]string{"Authorization": {"Bearer " + config.TikTokOAuth.AccessToken},
+		"Content-Type": {"application/json; charset=UTF-8"}}
+	return toHttpRequest(POST, tiktokQueryCreatorInfoEndpoint, nil, headers, nil)
+}
 
 func BuildTikTokAuthorizationRequest(config config.Config, codeVerifier string) *http.Request {
 	queryParams := loginQueryParameters(config, codeVerifier)
-	headers := buildTikTokHeaders()
-	return ToHttpRequest(POST, tiktokLoginEndpoint, queryParams, headers, nil)
+	headers := buildOAuthAndLoginHeaders()
+	return toHttpRequest(POST, tiktokLoginEndpoint, queryParams, headers, nil)
 }
 
 func BuildTikTokOAuthRequest(config config.Config, code string, codeVerifier string) *http.Request {
 	oauthBody := buildTikTokOAuthBody(config, code, codeVerifier)
-	headers := buildTikTokHeaders()
-	return ToHttpRequest(POST, tiktokOAuthEndpoint, make(map[string]string), headers, oauthBody)
+	headers := buildOAuthAndLoginHeaders()
+	return toHttpRequest(POST, tiktokOAuthEndpoint, make(map[string]string), headers, oauthBody)
 }
 
 func buildTikTokOAuthBody(config config.Config, code string, codeVerifier string) *strings.Reader {
@@ -42,7 +47,7 @@ func buildTikTokOAuthBody(config config.Config, code string, codeVerifier string
 	return encoded
 }
 
-func buildTikTokHeaders() map[string][]string {
+func buildOAuthAndLoginHeaders() map[string][]string {
 	headers := map[string][]string{}
 	headers["Content-Type"] = []string{"application/x-www-form-urlencoded"}
 	headers["Cache-Control"] = []string{"no-cache"}
