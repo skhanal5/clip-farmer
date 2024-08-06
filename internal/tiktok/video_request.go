@@ -8,7 +8,7 @@ import (
 )
 
 func BuildVideoUploadRequest(oauth string, videoSize int64) *http.Request {
-	const tiktokVideoUploadEndpoint = "https://open.tiktokapis.com/v2/post/publish/inbox/video/init"
+	const tiktokVideoUploadEndpoint = "https://open.tiktokapis.com/v2/post/publish/inbox/video/init/"
 
 	body := buildVideoUploadBody(videoSize, videoSize, 1)
 	headers := buildAuthorizationHeaders(oauth)
@@ -16,13 +16,16 @@ func BuildVideoUploadRequest(oauth string, videoSize int64) *http.Request {
 }
 
 func buildVideoUploadBody(videoSize int64, chunkSize int64, totalChunkCount int) *bytes.Buffer {
-	requestBodyMap := map[string]interface{}{
+	contents := map[string]interface{}{
 		"source":            "FILE_UPLOAD",
 		"video_size":        videoSize,
 		"chunk_size":        chunkSize,
 		"total_chunk_count": totalChunkCount,
 	}
-	jsonBody, err := json.Marshal(requestBodyMap)
+	responseBody := map[string]interface{}{
+		"source_info": contents,
+	}
+	jsonBody, err := json.Marshal(responseBody)
 	if err != nil {
 		panic(err)
 	}
