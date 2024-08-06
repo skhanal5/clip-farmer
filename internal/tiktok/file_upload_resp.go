@@ -1,4 +1,4 @@
-package model
+package tiktok
 
 type FileUploadResponse struct {
 	Data  FileData `json:"data"`

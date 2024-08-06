@@ -1,4 +1,4 @@
-package model
+package twitch
 
 type ClipDownloadResponse struct {
 	Data       ClipData           `json:"data"`

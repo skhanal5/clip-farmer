@@ -8,9 +8,10 @@ import (
 const (
 	GET  = "GET"
 	POST = "POST"
+	PUT  = "PUT"
 )
 
-func toHttpRequest(requestType string, requestURL string, queryParameters map[string]string, headers map[string][]string, requestBody io.Reader) *http.Request {
+func ToHttpRequest(requestType string, requestURL string, queryParameters map[string]string, headers map[string][]string, requestBody io.Reader) *http.Request {
 	req, _ := http.NewRequest(requestType, requestURL, requestBody)
 	if headers != nil {
 		req.Header = headers

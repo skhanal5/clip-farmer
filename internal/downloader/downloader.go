@@ -3,7 +3,7 @@ package downloader
 import (
 	"encoding/json"
 	"fmt"
-	model "github.com/skhanal5/clip-farmer/internal/model/twitch"
+	"github.com/skhanal5/clip-farmer/internal/twitch"
 	"io"
 	"log"
 	"net/http"
@@ -18,7 +18,7 @@ const (
 	downloadDelay  = 5 * time.Second
 )
 
-func DownloadClips(path string, clips []model.Clip) {
+func DownloadClips(path string, clips []twitch.Clip) {
 	directoryPath := "clips/" + path
 	err := os.MkdirAll(directoryPath, os.ModePerm)
 	if err != nil {
@@ -31,6 +31,7 @@ func DownloadClips(path string, clips []model.Clip) {
 	}
 }
 
+// credit to twitch-dl for reference
 func downloadClip(downloadURL string, clipName string, directoryPath string) {
 	filepath := directoryPath + "/" + clipName + ".mp4"
 	client := http.Client{
@@ -69,10 +70,10 @@ func downloadClip(downloadURL string, clipName string, directoryPath string) {
 		size += int64(n)
 	}
 }
-func buildClipDownloadURL(clip model.Clip) string {
+func buildClipDownloadURL(clip twitch.Clip) string {
 	log.Print("Making download url for clip with id: " + clip.ID)
 	token := clip.PlaybackAccessToken
-	var valueTok model.Value
+	var valueTok twitch.Value
 	err := json.Unmarshal([]byte(token.Value), &valueTok)
 	if err != nil {
 		panic("Error unmarshalling JSON: " + err.Error())

@@ -1,4 +1,4 @@
-package model
+package tiktok
 
 type Error struct {
 	Code    string `json:"code"`

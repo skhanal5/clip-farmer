@@ -1,4 +1,4 @@
-package model
+package tiktok
 
 type CreatorInfoResponse struct {
 	Data  CreatorData `json:"data"`

@@ -1,4 +1,4 @@
-package model
+package twitch
 
 type GQLRequest struct {
 	Query     string                 `json:"query"`

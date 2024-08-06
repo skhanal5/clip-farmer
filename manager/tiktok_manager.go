@@ -7,23 +7,63 @@ import (
 	"fmt"
 	"github.com/skhanal5/clip-farmer/internal/client"
 	"github.com/skhanal5/clip-farmer/internal/config"
-	model "github.com/skhanal5/clip-farmer/internal/model/tiktok"
-	"github.com/skhanal5/clip-farmer/internal/request"
 	"github.com/skhanal5/clip-farmer/internal/server"
+	"github.com/skhanal5/clip-farmer/internal/tiktok"
 	"log"
 	"math/big"
+	"os"
 	"strings"
 	"sync"
 )
 
-func FetchQueryCreatorInfo(config config.Config) model.CreatorInfoResponse {
-	creatorInfoReq := request.BuildTikTokQueryCreatorInfoRequest(config)
+//func UploadVideosFromPath(config config.Config, path string) {
+//	files, err := os.ReadDir(path)
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	for _, file := range files {
+//		fileInfo, err := file.Info()
+//		if err != nil {
+//			panic(err)
+//		}
+//		uploadVideoAsDraft(config, fileInfo)
+//	}
+//}
+
+func UploadVideoAsDraft(config config.Config, video os.FileInfo) tiktok.FileUploadResponse {
+	size := video.Size()
+	sizeInMB := size / 1024 / 1024
+	if sizeInMB > 64 {
+		panic("file size too big to be uploaded in one chunk")
+	}
+	return sendFileUploadReq(config, size)
+}
+
+func sendFileUploadReq(config config.Config, size int64) tiktok.FileUploadResponse {
+	videoUploadReq := tiktok.BuildVideoUploadRequest(config.TikTokOAuth.AccessToken, size)
+	fmt.Println(videoUploadReq)
+	res, err := client.SendRequest(videoUploadReq)
+	if err != nil {
+		panic(err)
+	}
+	var videoUploadRes tiktok.FileUploadResponse
+	fmt.Println(string(res))
+	err = json.Unmarshal(res, &videoUploadRes)
+	if err != nil {
+		panic(err)
+	}
+	return videoUploadRes
+}
+
+func FetchQueryCreatorInfo(config config.Config) tiktok.CreatorInfoResponse {
+	creatorInfoReq := tiktok.BuildQueryCreatorInfoRequest(config.TikTokOAuth.AccessToken)
 	fmt.Println(creatorInfoReq)
 	res, err := client.SendRequest(creatorInfoReq)
 	if err != nil {
 		panic(err)
 	}
-	var creatorInfoRes model.CreatorInfoResponse
+	var creatorInfoRes tiktok.CreatorInfoResponse
 	fmt.Println(string(res))
 	err = json.Unmarshal(res, &creatorInfoRes)
 	if err != nil {
@@ -62,7 +102,7 @@ func generateRawCodeChallenge(codeVerifier string) string {
 }
 
 func authenticateTikTokUser(config config.Config, codeChallenge string) string {
-	authRequest := request.BuildTikTokAuthorizationRequest(config, codeChallenge)
+	authRequest := tiktok.BuildAuthenticationRequest(config.TwitchClientId, codeChallenge)
 	log.Print("Invoking TikTok Login request")
 	fmt.Println(authRequest.URL.String())
 	codeChan := make(chan string)
@@ -73,14 +113,14 @@ func authenticateTikTokUser(config config.Config, codeChallenge string) string {
 	return value
 }
 
-func sendTikTokOAuthRequest(config config.Config, code string, codeVerifier string) model.TikTokOAuthResponse {
-	oauthReq := request.BuildTikTokOAuthRequest(config, code, codeVerifier)
+func sendTikTokOAuthRequest(config config.Config, code string, codeVerifier string) tiktok.OAuthResponse {
+	oauthReq := tiktok.BuildOAuthRequest(config.TikTokClientKey, config.TikTokClientSecret, code, codeVerifier)
 	log.Print("Invoking TikTok OAuth request")
 	responseBody, err := client.SendRequest(oauthReq)
 	if err != nil {
 		panic(err)
 	}
-	var oauthResponse model.TikTokOAuthResponse
+	var oauthResponse tiktok.OAuthResponse
 	fmt.Println(string(responseBody))
 	err = json.Unmarshal(responseBody, &oauthResponse)
 	if err != nil {

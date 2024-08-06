@@ -1,4 +1,4 @@
-package model
+package tiktok
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-type TikTokOAuthResponse struct {
+type OAuthResponse struct {
 	AccessToken      string `json:"access_token"`
 	ExpiresIn        int    `json:"expires_in"`
 	OpenId           string `json:"open_id"`
@@ -16,7 +16,7 @@ type TikTokOAuthResponse struct {
 	TokenType        string `json:"token_type"`
 }
 
-func (o TikTokOAuthResponse) WriteToFile() {
+func (o OAuthResponse) WriteToFile() {
 	file, err := os.Create("tiktok_oauth_resp.json")
 	if err != nil {
 		log.Print(err)
@@ -31,24 +31,4 @@ func (o TikTokOAuthResponse) WriteToFile() {
 	if err != nil {
 		log.Print(err)
 	}
-}
-
-func LoadTikTokOAuth() TikTokOAuthResponse {
-	var oauthResponse TikTokOAuthResponse
-	file, err := os.Open("tiktok_oauth_resp.json")
-	if err != nil {
-		log.Print(err)
-		return oauthResponse
-	}
-	defer file.Close()
-
-	err = json.NewDecoder(file).Decode(&oauthResponse)
-	if err != nil {
-		log.Print(err)
-		return oauthResponse
-	}
-
-	// Check if the token is expired
-	// Get Refresh token
-	return oauthResponse
 }
