@@ -6,11 +6,11 @@ import (
 )
 
 func BuildAuthenticationRequest(clientKey string, codeVerifier string) *http.Request {
-	const tiktokLoginEndpoint = "https://www.tiktok.com/v2/auth/authorize/"
+	const loginEndpoint = "https://www.tiktok.com/v2/auth/authorize/"
 
 	queryParams := buildAuthQueryParams(clientKey, codeVerifier)
 	headers := buildOAuthAndLoginHeaders()
-	return request.ToHttpRequest(request.POST, tiktokLoginEndpoint, queryParams, headers, nil)
+	return request.ToHttpRequest(request.POST, loginEndpoint, queryParams, headers, nil)
 }
 
 func buildAuthQueryParams(clientKey string, codeChallenge string) map[string]string {

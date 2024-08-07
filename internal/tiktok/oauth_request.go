@@ -8,11 +8,11 @@ import (
 )
 
 func BuildOAuthRequest(clientKey string, clientSecret string, code string, codeVerifier string) *http.Request {
-	const tiktokOAuthEndpoint = "https://open.tiktokapis.com/v2/oauth/token/"
+	const oauthEndpoint = "https://open.tiktokapis.com/v2/oauth/token/"
 
 	oauthBody := buildOAuthBody(clientKey, clientSecret, code, codeVerifier)
 	headers := buildOAuthAndLoginHeaders()
-	return request.ToHttpRequest(request.POST, tiktokOAuthEndpoint, make(map[string]string), headers, oauthBody)
+	return request.ToHttpRequest(request.POST, oauthEndpoint, make(map[string]string), headers, oauthBody)
 }
 
 func buildOAuthBody(clientKey string, clientSecret string, code string, codeVerifier string) *strings.Reader {

@@ -24,7 +24,7 @@ func SendRequest(req *http.Request) ([]byte, error) {
 	}
 
 	if resp.StatusCode != 200 {
-		log.Print("Received a log with a non-200 status code: " + resp.Status)
+		log.Print("Received a responses with a non-200 status code: " + resp.Status)
 		return nil, errors.New(string(body))
 	}
 	return body, nil

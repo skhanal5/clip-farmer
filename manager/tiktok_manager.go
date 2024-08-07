@@ -31,18 +31,29 @@ import (
 //	}
 //}
 
-func UploadVideoAsDraft(config config.Config, video os.FileInfo) tiktok.FileUploadResponse {
-	size := video.Size()
-	sizeInMB := size / 1024 / 1024
-	if sizeInMB > 64 {
+func UploadVideoAsDraft(config config.Config, size int64, file *os.File) string {
+	if size > 64000000 {
 		panic("file size too big to be uploaded in one chunk")
 	}
-	return sendFileUploadReq(config, size)
+	response := sendFileUploadReq(config, size)
+	return sendVideoUploadReq(file, size, response)
+}
+
+func sendVideoUploadReq(file *os.File, size int64, response tiktok.FileUploadResponse) string {
+	byteRange := fmt.Sprintf("bytes 0-%d/%d", size-1, size)
+	videoUploadReq := tiktok.BuildVideoUploadRequest(file, byteRange, response.Data.UploadURL)
+	fmt.Println(videoUploadReq)
+	res, err := client.SendRequest(videoUploadReq)
+	if err != nil {
+		panic(err)
+	}
+	return string(res)
 }
 
 func sendFileUploadReq(config config.Config, size int64) tiktok.FileUploadResponse {
-	videoUploadReq := tiktok.BuildFileUploadRequest(config.TikTokOAuth.AccessToken, size)
-	res, err := client.SendRequest(videoUploadReq)
+	fileUploadReq := tiktok.BuildFileUploadRequest(config.TikTokOAuth.AccessToken, size)
+	fmt.Println(fileUploadReq)
+	res, err := client.SendRequest(fileUploadReq)
 	if err != nil {
 		panic(err)
 	}
