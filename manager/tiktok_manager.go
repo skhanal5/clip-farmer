@@ -41,14 +41,12 @@ func UploadVideoAsDraft(config config.Config, video os.FileInfo) tiktok.FileUplo
 }
 
 func sendFileUploadReq(config config.Config, size int64) tiktok.FileUploadResponse {
-	videoUploadReq := tiktok.BuildVideoUploadRequest(config.TikTokOAuth.AccessToken, size)
-	fmt.Println(videoUploadReq)
+	videoUploadReq := tiktok.BuildFileUploadRequest(config.TikTokOAuth.AccessToken, size)
 	res, err := client.SendRequest(videoUploadReq)
 	if err != nil {
 		panic(err)
 	}
 	var videoUploadRes tiktok.FileUploadResponse
-	fmt.Println(string(res))
 	err = json.Unmarshal(res, &videoUploadRes)
 	if err != nil {
 		panic(err)
