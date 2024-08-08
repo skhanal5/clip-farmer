@@ -2,13 +2,18 @@ package main
 
 import (
 	"fmt"
-	"github.com/skhanal5/clip-farmer/config"
-	"github.com/skhanal5/clip-farmer/internal/service"
+	"github.com/skhanal5/clip-farmer/internal/config"
+	"github.com/skhanal5/clip-farmer/manager"
+	"os"
 )
 
 func main() {
-	configuration := config.LoadConfig()
-	twitchService := service.NewTwitchService(configuration)
-	res, err := twitchService.FetchUser("test")
-	fmt.Print(res, err)
+	configuration := config.NewConfig()
+	tiktokManager := manager.InitTikTokManager(configuration)
+
+	file, _ := os.Open("clips/stableronaldo/1330804442.mp4")
+	stat, _ := file.Stat()
+	size := stat.Size()
+	res2 := tiktokManager.UploadVideoAsDraft(size, file)
+	fmt.Println(res2)
 }
