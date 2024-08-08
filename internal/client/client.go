@@ -23,8 +23,8 @@ func SendRequest(req *http.Request) ([]byte, error) {
 		return nil, err
 	}
 
-	if resp.StatusCode != 200 {
-		log.Print("Received a responses with a non-200 status code: " + resp.Status)
+	if resp.StatusCode >= 400 {
+		log.Print("Received an invalid response " + resp.Status)
 		return nil, errors.New(string(body))
 	}
 	return body, nil

@@ -7,8 +7,8 @@ import (
 	"net/http"
 )
 
-func BuildGQLTwitchUserRequest(username string, oauthToken string, clientId string) *http.Request {
-	headers := twitchAuthorizationHeadersGQL(oauthToken, clientId)
+func BuildGQLTwitchUserRequest(username string, clientId string, oauthToken string) *http.Request {
+	headers := twitchAuthorizationHeadersGQL(clientId, oauthToken)
 	requestBody := buildUserReq(username)
 	return request.ToHttpRequest(request.POST, twitchGQLAPI, nil, headers, requestBody)
 }

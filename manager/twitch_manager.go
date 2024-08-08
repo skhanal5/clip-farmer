@@ -10,26 +10,37 @@ import (
 	"time"
 )
 
-const (
-	requestDelay = 5 * time.Second // Delay between download attempts
-)
+type TwitchManager struct {
+	clientId    string
+	clientOAuth string
+	targetUser  string
+}
 
-func FetchAndDownloadClips(config config.Config) {
-	user := fetchUser(config)
+func InitTwitchManager(c config.Config) *TwitchManager {
+	return &TwitchManager{
+		clientId:    c.TwitchClientId,
+		clientOAuth: c.TwitchClientOAuth,
+	}
+}
+
+func (t *TwitchManager) FetchAndDownloadClips() {
+	const requestDelay = 5 * time.Second // Delay between download attempts
+
+	user := fetchUser(t.clientId, t.clientOAuth, t.targetUser)
 	edges := user.Data.User.Clips.Edges
 	clips := make([]twitch.Clip, 0)
 	for _, edge := range edges {
 		slug := edge.Node.Slug
 		time.Sleep(requestDelay)
-		clip := fetchClipDownloadInfo(config, slug)
+		clip := fetchClipDownloadInfo(t.clientId, t.clientOAuth, slug)
 		clips = append(clips, clip.Data.Clip)
 	}
-	downloader.DownloadClips(config.TwitchTargetCreator, clips)
+	downloader.DownloadClips(t.targetUser, clips)
 }
 
-func fetchUser(config config.Config) twitch.UserResponse {
-	userRequest := twitch.BuildGQLTwitchUserRequest(config.TwitchTargetCreator, config.TwitchClientOAuth, config.TwitchClientId)
-	log.Print("Getting user: " + config.TwitchTargetCreator + " through Twitch GQL API")
+func fetchUser(clientId string, clientOAuth string, targetUser string) twitch.UserResponse {
+	userRequest := twitch.BuildGQLTwitchUserRequest(targetUser, clientId, clientOAuth)
+	log.Print("Getting user: " + targetUser + " through Twitch GQL API")
 	body, err := client.SendRequest(userRequest)
 	if err != nil {
 		panic(err)
@@ -43,8 +54,8 @@ func fetchUser(config config.Config) twitch.UserResponse {
 	return gqlResponse
 }
 
-func fetchClipDownloadInfo(config config.Config, clipId string) twitch.ClipDownloadResponse {
-	clipsRequest := twitch.BuildTwitchClipDownloadRequest(clipId, config.TwitchClientOAuth, config.TwitchClientId)
+func fetchClipDownloadInfo(clientId string, clientOAuth string, clipId string) twitch.ClipDownloadResponse {
+	clipsRequest := twitch.BuildTwitchClipDownloadRequest(clipId, clientId, clientOAuth)
 	log.Print("Getting clip download info for clip with id: " + clipId + " through Twitch GQL API")
 	responseBody, err := client.SendRequest(clipsRequest)
 	if err != nil {

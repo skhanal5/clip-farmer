@@ -16,26 +16,36 @@ import (
 	"sync"
 )
 
-//func UploadVideosFromPath(config config.Config, path string) {
-//	files, err := os.ReadDir(path)
-//	if err != nil {
-//		panic(err)
-//	}
-//
-//	for _, file := range files {
-//		fileInfo, err := file.Info()
-//		if err != nil {
-//			panic(err)
-//		}
-//		uploadVideoAsDraft(config, fileInfo)
-//	}
-//}
+type TikTokManager struct {
+	oauth tiktok.OAuthToken
+}
 
-func UploadVideoAsDraft(config config.Config, size int64, file *os.File) string {
+func InitTikTokManager(config config.Config) TikTokManager {
+	var oauthResponse tiktok.OAuthToken
+	file, err := os.Open("tiktok_oauth_resp.json")
+	if err != nil {
+		log.Print("Failed to open TikTok OAuth Token")
+		oauthResponse = fetchTiktokOAuth(config.TikTokClientKey, config.TikTokClientSecret)
+		return TikTokManager{oauthResponse}
+	}
+	defer file.Close()
+
+	err = json.NewDecoder(file).Decode(&oauthResponse)
+	if err != nil {
+		log.Print("Failed to deserialize Tiktok OAuth Token")
+		oauthResponse = fetchTiktokOAuth(config.TikTokClientKey, config.TikTokClientSecret)
+		return TikTokManager{oauthResponse}
+	}
+
+	// add function to check expiration, and use refresh
+	return TikTokManager{oauth: oauthResponse}
+}
+
+func (m *TikTokManager) UploadVideoAsDraft(size int64, file *os.File) string {
 	if size > 64000000 {
 		panic("file size too big to be uploaded in one chunk")
 	}
-	response := sendFileUploadReq(config, size)
+	response := sendFileUploadReq(m.oauth, size)
 	return sendVideoUploadReq(file, size, response)
 }
 
@@ -50,8 +60,8 @@ func sendVideoUploadReq(file *os.File, size int64, response tiktok.FileUploadRes
 	return string(res)
 }
 
-func sendFileUploadReq(config config.Config, size int64) tiktok.FileUploadResponse {
-	fileUploadReq := tiktok.BuildFileUploadRequest(config.TikTokOAuth.AccessToken, size)
+func sendFileUploadReq(oauth tiktok.OAuthToken, size int64) tiktok.FileUploadResponse {
+	fileUploadReq := tiktok.BuildFileUploadRequest(oauth.AccessToken, size)
 	fmt.Println(fileUploadReq)
 	res, err := client.SendRequest(fileUploadReq)
 	if err != nil {
@@ -65,32 +75,13 @@ func sendFileUploadReq(config config.Config, size int64) tiktok.FileUploadRespon
 	return videoUploadRes
 }
 
-func FetchQueryCreatorInfo(config config.Config) tiktok.CreatorInfoResponse {
-	creatorInfoReq := tiktok.BuildQueryCreatorInfoRequest(config.TikTokOAuth.AccessToken)
-	fmt.Println(creatorInfoReq)
-	res, err := client.SendRequest(creatorInfoReq)
-	if err != nil {
-		panic(err)
-	}
-	var creatorInfoRes tiktok.CreatorInfoResponse
-	fmt.Println(string(res))
-	err = json.Unmarshal(res, &creatorInfoRes)
-	if err != nil {
-		panic(err)
-	}
-	return creatorInfoRes
-}
-
-func FetchTiktokOAuth(config config.Config) {
-	if config.TikTokOAuth.AccessToken != "" {
-		return
-	}
+func fetchTiktokOAuth(clientKey string, clientSecret string) tiktok.OAuthToken {
 	codeVerifier := generateCodeVerifier(64)
 	codeChallenge := generateRawCodeChallenge(codeVerifier)
-	code := authenticateTikTokUser(config, codeChallenge)
-	oauth := sendTikTokOAuthRequest(config, code, codeVerifier)
-	config.SetTikTokOAuth(oauth)
-	oauth.WriteToFile()
+	code := authenticateTikTokUser(clientKey, codeChallenge)
+	oauth := sendTikTokOAuthRequest(clientKey, clientSecret, code, codeVerifier)
+	writeToFile(oauth)
+	return oauth
 }
 
 func generateCodeVerifier(length int) string {
@@ -110,8 +101,8 @@ func generateRawCodeChallenge(codeVerifier string) string {
 	return fmt.Sprintf("%x", hashBytes)
 }
 
-func authenticateTikTokUser(config config.Config, codeChallenge string) string {
-	authRequest := tiktok.BuildAuthenticationRequest(config.TwitchClientId, codeChallenge)
+func authenticateTikTokUser(clientKey string, codeChallenge string) string {
+	authRequest := tiktok.BuildAuthenticationRequest(clientKey, codeChallenge)
 	log.Print("Invoking TikTok Login request")
 	fmt.Println(authRequest.URL.String())
 	codeChan := make(chan string)
@@ -122,18 +113,35 @@ func authenticateTikTokUser(config config.Config, codeChallenge string) string {
 	return value
 }
 
-func sendTikTokOAuthRequest(config config.Config, code string, codeVerifier string) tiktok.OAuthResponse {
-	oauthReq := tiktok.BuildOAuthRequest(config.TikTokClientKey, config.TikTokClientSecret, code, codeVerifier)
+func sendTikTokOAuthRequest(clientKey string, clientSecret string, code string, codeVerifier string) tiktok.OAuthToken {
+	oauthReq := tiktok.BuildOAuthRequest(clientKey, clientSecret, code, codeVerifier)
 	log.Print("Invoking TikTok OAuth request")
 	responseBody, err := client.SendRequest(oauthReq)
 	if err != nil {
 		panic(err)
 	}
-	var oauthResponse tiktok.OAuthResponse
+	var oauthResponse tiktok.OAuthToken
 	fmt.Println(string(responseBody))
 	err = json.Unmarshal(responseBody, &oauthResponse)
 	if err != nil {
 		panic(err)
 	}
 	return oauthResponse
+}
+
+func writeToFile(o tiktok.OAuthToken) {
+	file, err := os.Create("tiktok_oauth_resp.json")
+	if err != nil {
+		log.Print(err)
+	}
+	defer file.Close()
+
+	data, err := json.MarshalIndent(o, "", "  ")
+	if err != nil {
+		log.Print(err)
+	}
+	_, err = file.Write(data)
+	if err != nil {
+		log.Print(err)
+	}
 }

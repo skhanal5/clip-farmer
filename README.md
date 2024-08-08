@@ -8,9 +8,8 @@ Please use this project responsibly and ethically.
 
 ### Local Development
 
-This makes downstream API to TikTok and Twitch's API's. This means
-to run the application you will need to register an application with
-both Twitch and TikTok and pass in their secret values. 
+This application makes downstream API calls to TikTok and Twitch's API's. Thus, you will
+need the appropriate credentials from both services.
 
 #### Twitch Credentials
 You will need the `TWITCH_CLIENT_ID` and the `TWITCH_CLIENT_OAUTH` values from your Twitch account.

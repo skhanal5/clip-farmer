@@ -11,8 +11,8 @@ const (
 	twitchGQLAPI = "https://gql.twitch.tv/gql"
 )
 
-func BuildTwitchClipDownloadRequest(clipSlug string, oauthToken string, clientId string) *http.Request {
-	headers := twitchAuthorizationHeadersGQL(oauthToken, clientId)
+func BuildTwitchClipDownloadRequest(clipSlug string, clientId string, oauthToken string) *http.Request {
+	headers := twitchAuthorizationHeadersGQL(clientId, oauthToken)
 	requestBody := buildGQLClipsRequestBody(clipSlug)
 	return request.ToHttpRequest(request.POST, twitchGQLAPI, nil, headers, requestBody)
 }
@@ -34,7 +34,7 @@ func buildGQLClipsRequestBody(clipSlug string) *bytes.Buffer {
 	return bytes.NewBuffer(jsonData)
 }
 
-func twitchAuthorizationHeadersGQL(oauthToken string, clientId string) map[string][]string {
+func twitchAuthorizationHeadersGQL(clientId string, oauthToken string) map[string][]string {
 	headers := make(map[string][]string)
 	headers["Authorization"] = []string{"OAuth" + oauthToken}
 	headers["Client-Id"] = []string{clientId}

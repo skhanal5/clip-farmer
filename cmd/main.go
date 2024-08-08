@@ -9,10 +9,11 @@ import (
 
 func main() {
 	configuration := config.NewConfig()
-	manager.FetchTiktokOAuth(configuration)
-	file, _ := os.Open("clips/stableronaldo/328829385.mp4")
+	tiktokManager := manager.InitTikTokManager(configuration)
+
+	file, _ := os.Open("clips/stableronaldo/1330804442.mp4")
 	stat, _ := file.Stat()
 	size := stat.Size()
-	res2 := manager.UploadVideoAsDraft(configuration, size, file)
+	res2 := tiktokManager.UploadVideoAsDraft(size, file)
 	fmt.Println(res2)
 }
