@@ -1,6 +1,11 @@
 ## clip-farmer
 Automating the process of selecting, editing, and producing short-form content from existing media sources
 
+### Disclaimer
+This project is intended for educational purposes only. The author(s) of this project are not liable for any misuse or damage that may arise from the use of this project. Users of this project are responsible for ensuring that their use complies with all applicable laws, terms of service, and policies of third-party services.
+
+Please use this project responsibly and ethically.
+
 ### Local Development
 
 This makes downstream API to TikTok and Twitch's API's. This means
@@ -8,11 +13,8 @@ to run the application you will need to register an application with
 both Twitch and TikTok and pass in their secret values. 
 
 #### Twitch Credentials
-You will need the `TWITCH_CLIENT_ID` and the `TWITCH_CLIENT_SECRET` values
-from your register application on the [Twitch Developer Dashboard](https://dev.twitch.tv/console). Using these values, the application
-will handle fetching OAuth tokens and sending authorized requests on your behalf.
-
-This application as of now only uses `GET Users` and `GET Clips` from Twitch's API. 
+You will need the `TWITCH_CLIENT_ID` and the `TWITCH_CLIENT_OAUTH` values from your Twitch account.
+This can be retrieved from your browser's console after authenticating into Twitch.
 
 #### TikTok Credentials
 Next, you will need the `TIKTOK_CLIENT_KEY` and `TIKTOK_CLIENT_SECRET` values from
@@ -20,20 +22,23 @@ your registered application on the [TikTok Developer Dashboard](https://develope
 application it is recommended that you make a Sandbox account.
 
 In addition to the above, the application requires you to register an `Target User` so that you can post content
-on that account's behalf.
+on that account's behalf. We make use of the `TIKTOK_CLIENT_KEY` and `TIKTOK_CLIENT_SECRET` to fetch an OAuth
+token on behalf of that user.
 
 #### Environment Variables
 
-Altogether, you will need to pass in the following secret values:
+Altogether, you will need to pass in the following secret values in the config.yaml file:
 
 ```
-// found on twitch developer dashboard
-TWITCH_CLIENT_ID = ""
-TWITCH_CLIENT_SECRET = ""
-
-// found on tiktok developer dashboard
-TIKTOK_CLIENT_KEY = ""
-TIKTOK_CLIENT_SECRET = ""
+secrets:
+  twitch:
+    client-id: 
+    client-oauth:
+  tiktok:
+    client-key: 
+    client-secret:
+query:
+  twitch-creator: stableronaldo
 ```
 
 #### Running the Application
