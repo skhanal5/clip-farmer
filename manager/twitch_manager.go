@@ -20,6 +20,7 @@ func InitTwitchManager(c config.Config) *TwitchManager {
 	return &TwitchManager{
 		clientId:    c.TwitchClientId,
 		clientOAuth: c.TwitchClientOAuth,
+		targetUser:  c.TwitchTargetCreator,
 	}
 }
 
@@ -27,6 +28,7 @@ func (t *TwitchManager) FetchAndDownloadClips() {
 	const requestDelay = 5 * time.Second // Delay between download attempts
 
 	user := fetchUser(t.clientId, t.clientOAuth, t.targetUser)
+
 	edges := user.Data.User.Clips.Edges
 	clips := make([]twitch.Clip, 0)
 	for _, edge := range edges {
