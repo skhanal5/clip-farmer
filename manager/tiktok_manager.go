@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/skhanal5/clip-farmer/internal/client"
-	"github.com/skhanal5/clip-farmer/internal/config"
 	"github.com/skhanal5/clip-farmer/internal/server"
 	"github.com/skhanal5/clip-farmer/internal/tiktok"
 	"log"
@@ -20,12 +19,12 @@ type TikTokManager struct {
 	oauth tiktok.OAuthToken
 }
 
-func InitTikTokManager(config config.Config) TikTokManager {
+func InitTikTokManager(clientKey string, clientSecret string) TikTokManager {
 	var oauthResponse tiktok.OAuthToken
 	file, err := os.Open("tiktok_oauth_resp.json")
 	if err != nil {
 		log.Print("Failed to open TikTok OAuth Token")
-		oauthResponse = fetchTiktokOAuth(config.TikTokClientKey, config.TikTokClientSecret)
+		oauthResponse = fetchTiktokOAuth(clientKey, clientSecret)
 		return TikTokManager{oauthResponse}
 	}
 	defer file.Close()
@@ -33,7 +32,7 @@ func InitTikTokManager(config config.Config) TikTokManager {
 	err = json.NewDecoder(file).Decode(&oauthResponse)
 	if err != nil {
 		log.Print("Failed to deserialize Tiktok OAuth Token")
-		oauthResponse = fetchTiktokOAuth(config.TikTokClientKey, config.TikTokClientSecret)
+		oauthResponse = fetchTiktokOAuth(clientKey, clientSecret)
 		return TikTokManager{oauthResponse}
 	}
 

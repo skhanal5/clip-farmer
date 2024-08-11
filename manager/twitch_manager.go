@@ -3,7 +3,6 @@ package manager
 import (
 	"encoding/json"
 	"github.com/skhanal5/clip-farmer/internal/client"
-	"github.com/skhanal5/clip-farmer/internal/config"
 	"github.com/skhanal5/clip-farmer/internal/downloader"
 	"github.com/skhanal5/clip-farmer/internal/twitch"
 	"log"
@@ -13,23 +12,21 @@ import (
 type TwitchManager struct {
 	clientId    string
 	clientOAuth string
-	targetUser  string
 }
 
-func InitTwitchManager(c config.Config) *TwitchManager {
-	return &TwitchManager{
-		clientId:    c.TwitchClientId,
-		clientOAuth: c.TwitchClientOAuth,
-		targetUser:  c.TwitchTargetCreator,
+func InitTwitchManager(clientId string, clientOAuth string) TwitchManager {
+	return TwitchManager{
+		clientId:    clientId,
+		clientOAuth: clientOAuth,
 	}
 }
 
-func (t *TwitchManager) FetchAndDownloadClips() {
+func (t *TwitchManager) FetchAndDownloadClips(user string) {
 	const requestDelay = 5 * time.Second // Delay between download attempts
 
-	user := fetchUser(t.clientId, t.clientOAuth, t.targetUser)
+	userRes := fetchUser(t.clientId, t.clientOAuth, user)
 
-	edges := user.Data.User.Clips.Edges
+	edges := userRes.Data.User.Clips.Edges
 	clips := make([]twitch.Clip, 0)
 	for _, edge := range edges {
 		slug := edge.Node.Slug
@@ -37,7 +34,7 @@ func (t *TwitchManager) FetchAndDownloadClips() {
 		clip := fetchClipDownloadInfo(t.clientId, t.clientOAuth, slug)
 		clips = append(clips, clip.Data.Clip)
 	}
-	downloader.DownloadClips(t.targetUser, clips)
+	downloader.DownloadClips(user, clips)
 }
 
 func fetchUser(clientId string, clientOAuth string, targetUser string) twitch.UserResponse {

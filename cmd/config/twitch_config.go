@@ -6,22 +6,17 @@ import (
 )
 
 var (
-	user        string
 	clientId    string
 	clientOAuth string
 )
 
-// twitchCmd represents the twitch command
+// twitchCmd represents the twitch subcommand
 var twitchConfigCmd = &cobra.Command{
 	Use:   "twitch",
 	Short: "Set Twitch configuration",
 	Run: func(cmd *cobra.Command, args []string) {
-		creatorFlag, _ := cmd.Flags().GetString("creator")
 		clientId, _ := cmd.Flags().GetString("client-id")
 		clientOAuth, _ := cmd.Flags().GetString("client-oauth")
-		if creatorFlag != "" {
-			viper.Set("secrets.twitch.creator", creatorFlag)
-		}
 		if clientId != "" {
 			viper.Set("secrets.twitch.client-id", clientId)
 		}
@@ -34,8 +29,6 @@ var twitchConfigCmd = &cobra.Command{
 
 func init() {
 	configCmd.AddCommand(twitchConfigCmd)
-	twitchConfigCmd.Flags().StringVarP(&user, "creator", "c", "",
-		"Set the username of the Twitch creator that we want to fetch clips from.")
 	twitchConfigCmd.Flags().StringVarP(&clientId, "client-id", "i", "",
 		"Set the client-id of the Twitch user that we want to send authenticated requests from.")
 	twitchConfigCmd.Flags().StringVarP(&clientOAuth, "client-oauth", "o", "",

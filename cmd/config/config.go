@@ -9,9 +9,8 @@ import (
 // configCmd represents the config command
 var configCmd = &cobra.Command{
 	Use:   "config",
-	Short: "Set the clip-farmer config for environment variables",
-	Long: `Override the default loading behavior of the clip-farmer config file by either passing in your own
-file to load environment variables from or by setting the environment variables manually through commands.`,
+	Short: "Set the clip-farmer config environment variables",
+	Long:  `Override the default loading behavior of the clip-farmer config file by setting the environment variables manually.`,
 }
 
 func Init() *cobra.Command {

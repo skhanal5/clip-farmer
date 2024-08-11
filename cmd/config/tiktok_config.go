@@ -11,7 +11,7 @@ var (
 	clientSecret string
 )
 
-// tiktokCmd represents the tiktok command
+// tiktokCmd represents the tiktok subcommand
 var tiktokConfigCmd = &cobra.Command{
 	Use:   "tiktok",
 	Short: "Set TikTok configuration",
