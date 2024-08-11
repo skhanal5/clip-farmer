@@ -2,7 +2,7 @@
 Automating the process of selecting, editing, and producing short-form content from existing media sources
 
 ## Disclaimer
-This project is intended for educational purposes only. The author(s) of this project are not liable for any misuse or damage that may arise from the use of this project. Users of this project are responsible for ensuring that their use complies with all applicable laws, terms of service, and policies of third-party services.
+This project is intended for educational purposes only. The author(s) of this project are not liable for any misuse or damage that may arise from the use of this project. Users of this project are responsible for ensuring that their use complies with all applicable laws, terms of service, and policies of third-party services. 
 
 Please use this project responsibly and ethically.  
 
@@ -13,17 +13,21 @@ Run `go build -o clip-farmer.exe` to build the executable in the project root if
 
 ### Config
 
-### TikTok Config
+#### TikTok Config
 To set the TikTok environment variables in the app config use the following command:
 ```
 .\clip-farmer.exe config tiktok --client-key [insert-client-key] --client-secret [insert-client-secret]
 ```
 
-### Twitch Config
+#### Twitch Config
 To set the Twitch environment variables in the app config use the following command:
 ```
 .\clip-farmer.exe config twitch --client-id [insert-client-id] --client-oauth [insert-client-oauth]
 ```
+
+**Note**: A side effect of running either command is that it will generate a `config.yaml` file in the project
+root directory which is when the CLI is initially loaded. This makes it so, you do not have to set these values
+each time you want to use it.
 
 ### Fetch
 
@@ -45,7 +49,7 @@ You can fetch clips from Twitch from a given user with the following command:
 ```
 .\clip-farmer.exe fetch clips twitch --user [insert-twitch-username]
 ```
-This will download clips of that user under the `./clips/[username]/` directory in the project root.
+This will download clips of that user under the `clips/[username]/` directory in the project root.
 
 ### Post
 
