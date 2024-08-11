@@ -4,30 +4,46 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package post
 
 import (
-	"fmt"
-
+	"errors"
+	"github.com/skhanal5/clip-farmer/manager"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+)
+
+var (
+	filePath string
 )
 
 // tiktokCmd represents the tiktok command
 var tiktokCmd = &cobra.Command{
 	Use:   "tiktok",
-	Short: "Post onto TikTok",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("tiktok called")
+	Short: "Post short-form content onto TikTok",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		manager, err := buildManager()
+
+		if err != nil {
+			return err
+		}
+
+		if filePath != "" {
+			manager.UploadVideo(filePath)
+		}
+		return nil
 	},
 }
 
 func init() {
 	postCmd.AddCommand(tiktokCmd)
+	tiktokCmd.Flags().StringVarP(&filePath, "path", "p", "",
+		"Path to the file containing the media that we want to post onto TikTok.")
+}
 
-	// Here you will define your flags and configuration settings.
+func buildManager() (manager.TikTokManager, error) {
+	clientOAuth := viper.GetString("secrets.tiktok.client-oauth")
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// tiktokCmd.PersistentFlags().String("foo", "", "A help for foo")
+	if clientOAuth == "" {
+		return manager.TikTokManager{}, errors.New("tiktok client-oauth is not configured")
+	}
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// tiktokCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	return manager.InitTikTokManager(clientOAuth), nil
 }

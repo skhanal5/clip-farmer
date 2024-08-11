@@ -16,35 +16,31 @@ import (
 )
 
 type TikTokManager struct {
-	oauth tiktok.OAuthToken
+	oauthToken string
 }
 
-func InitTikTokManager(clientKey string, clientSecret string) TikTokManager {
-	var oauthResponse tiktok.OAuthToken
-	file, err := os.Open("tiktok_oauth_resp.json")
+func InitTikTokManager(oauthToken string) TikTokManager {
+	return TikTokManager{oauthToken: oauthToken}
+}
+
+func (t *TikTokManager) UploadVideo(filepath string) {
+	file, err := os.Open(filepath)
 	if err != nil {
-		log.Print("Failed to open TikTok OAuth Token")
-		oauthResponse = fetchTiktokOAuth(clientKey, clientSecret)
-		return TikTokManager{oauthResponse}
+		log.Fatal(err)
 	}
 	defer file.Close()
-
-	err = json.NewDecoder(file).Decode(&oauthResponse)
+	stat, err := file.Stat()
 	if err != nil {
-		log.Print("Failed to deserialize Tiktok OAuth Token")
-		oauthResponse = fetchTiktokOAuth(clientKey, clientSecret)
-		return TikTokManager{oauthResponse}
+		log.Fatal(err)
 	}
-
-	// add function to check expiration, and use refresh
-	return TikTokManager{oauth: oauthResponse}
+	uploadVideoAsDraft(stat.Size(), file, t.oauthToken)
 }
 
-func (m *TikTokManager) UploadVideoAsDraft(size int64, file *os.File) string {
+func uploadVideoAsDraft(size int64, file *os.File, accessToken string) string {
 	if size > 64000000 {
 		panic("file size too big to be uploaded in one chunk")
 	}
-	response := sendFileUploadReq(m.oauth, size)
+	response := sendFileUploadReq(accessToken, size)
 	return sendVideoUploadReq(file, size, response)
 }
 
@@ -59,8 +55,8 @@ func sendVideoUploadReq(file *os.File, size int64, response tiktok.FileUploadRes
 	return string(res)
 }
 
-func sendFileUploadReq(oauth tiktok.OAuthToken, size int64) tiktok.FileUploadResponse {
-	fileUploadReq := tiktok.BuildFileUploadRequest(oauth.AccessToken, size)
+func sendFileUploadReq(accessToken string, size int64) tiktok.FileUploadResponse {
+	fileUploadReq := tiktok.BuildFileUploadRequest(accessToken, size)
 	fmt.Println(fileUploadReq)
 	res, err := client.SendRequest(fileUploadReq)
 	if err != nil {
@@ -74,13 +70,13 @@ func sendFileUploadReq(oauth tiktok.OAuthToken, size int64) tiktok.FileUploadRes
 	return videoUploadRes
 }
 
-func fetchTiktokOAuth(clientKey string, clientSecret string) tiktok.OAuthToken {
+func FetchTiktokOAuth(clientKey string, clientSecret string) string {
 	codeVerifier := generateCodeVerifier(64)
 	codeChallenge := generateRawCodeChallenge(codeVerifier)
 	code := authenticateTikTokUser(clientKey, codeChallenge)
 	oauth := sendTikTokOAuthRequest(clientKey, clientSecret, code, codeVerifier)
 	writeToFile(oauth)
-	return oauth
+	return oauth.AccessToken
 }
 
 func generateCodeVerifier(length int) string {
