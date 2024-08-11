@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	"github.com/skhanal5/clip-farmer/cmd/config"
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-// rootCmd represents the base command when called without any subcommands
+// RootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "clip-farmer",
 	Short: "A CLI tool to automatically fetch, edit, and post short form content.",
@@ -19,4 +21,16 @@ func Execute() {
 	if err != nil {
 		os.Exit(1)
 	}
+}
+
+func init() {
+	cobra.OnInitialize(initConfig)
+	rootCmd.AddCommand(config.Init())
+}
+
+// initConfig reads in config file and ENV variables if set.
+func initConfig() {
+	viper.SetConfigFile("./config.yaml")
+	viper.AutomaticEnv() // read in environment variables that match
+	_ = viper.ReadInConfig()
 }
