@@ -1,3 +1,4 @@
+// Package downloader contains utility methods to facilitate downloading media from various services
 package downloader
 
 import (
@@ -18,7 +19,9 @@ const (
 	downloadDelay  = 5 * time.Second
 )
 
-func DownloadClips(path string, clips []twitch.Clip) {
+// DownloadTwitchClips allows you to download the specified array of clips onto the
+// path in your local filesystem.
+func DownloadTwitchClips(path string, clips []twitch.Clip) {
 	directoryPath := "clips/" + path
 	err := os.MkdirAll(directoryPath, os.ModePerm)
 	if err != nil {
@@ -31,7 +34,10 @@ func DownloadClips(path string, clips []twitch.Clip) {
 	}
 }
 
-// credit to twitch-dl for reference
+// downloadClip handles the logic to download a clip given an url, the name of the clip, and a path
+// to write the contents of the clip to.
+//
+// This function was implemented using the logic from twitch-dl. All credit goes to the authors of that library.
 func downloadClip(downloadURL string, clipName string, directoryPath string) {
 	filepath := directoryPath + "/" + clipName + ".mp4"
 	client := http.Client{
@@ -70,6 +76,9 @@ func downloadClip(downloadURL string, clipName string, directoryPath string) {
 		size += int64(n)
 	}
 }
+
+// buildClipDownloadURL takes a clip and generates a string containing the mp4 link
+// that can be downloaded via a request.
 func buildClipDownloadURL(clip twitch.Clip) string {
 	log.Print("Making download url for clip with id: " + clip.ID)
 	token := clip.PlaybackAccessToken

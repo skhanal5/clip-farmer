@@ -1,68 +1,74 @@
 package manager
 
 import (
-	"crypto/rand"
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"github.com/skhanal5/clip-farmer/internal/client"
-	"github.com/skhanal5/clip-farmer/internal/config"
-	"github.com/skhanal5/clip-farmer/internal/server"
 	"github.com/skhanal5/clip-farmer/internal/tiktok"
 	"log"
-	"math/big"
 	"os"
-	"strings"
-	"sync"
+	"time"
 )
 
+// TikTokManager contains all the necessary secret values to interact with the TikTok account via
+// the TikTok API
 type TikTokManager struct {
-	oauth tiktok.OAuthToken
+	oauthToken string
 }
 
-func InitTikTokManager(config config.Config) TikTokManager {
-	var oauthResponse tiktok.OAuthToken
-	file, err := os.Open("tiktok_oauth_resp.json")
+// InitTikTokManager Initializes a TikTokManager with an oauth token and returns an instance of it
+func InitTikTokManager(oauthToken string) TikTokManager {
+	return TikTokManager{oauthToken: oauthToken}
+}
+
+// UploadVideos uploads all videos in the directory specified onto the TikTok account
+func (t *TikTokManager) UploadVideos(directory string) {
+	dir, err := os.ReadDir(directory)
 	if err != nil {
-		log.Print("Failed to open TikTok OAuth Token")
-		oauthResponse = fetchTiktokOAuth(config.TikTokClientKey, config.TikTokClientSecret)
-		return TikTokManager{oauthResponse}
+		log.Fatal(err)
+	}
+
+	for _, file := range dir {
+		fileInfo, err := file.Info()
+		if err != nil {
+			log.Fatal(err)
+		}
+		time.Sleep(5 * time.Second)
+		t.UploadVideo(directory + "/" + fileInfo.Name())
+	}
+}
+
+// UploadVideo uploads the specified video in the filePath onto the TikTok account
+func (t *TikTokManager) UploadVideo(filepath string) {
+	file, err := os.Open(filepath)
+	if err != nil {
+		log.Fatal(err)
 	}
 	defer file.Close()
-
-	err = json.NewDecoder(file).Decode(&oauthResponse)
+	stat, err := file.Stat()
 	if err != nil {
-		log.Print("Failed to deserialize Tiktok OAuth Token")
-		oauthResponse = fetchTiktokOAuth(config.TikTokClientKey, config.TikTokClientSecret)
-		return TikTokManager{oauthResponse}
+		log.Fatalf("Tried to open file properties, received error: %s", err)
 	}
-
-	// add function to check expiration, and use refresh
-	return TikTokManager{oauth: oauthResponse}
+	if stat.IsDir() {
+		log.Fatalf("Path to file: %s is not a valid file", filepath)
+	}
+	t.uploadVideoAsDraft(stat.Size(), file)
 }
 
-func (m *TikTokManager) UploadVideoAsDraft(size int64, file *os.File) string {
+// uploadVideoAsDraft uploads the corresponding file as a draft onto the TikTok account. Returns the response body from the
+// corresponding API call.
+func (t *TikTokManager) uploadVideoAsDraft(size int64, file *os.File) string {
 	if size > 64000000 {
 		panic("file size too big to be uploaded in one chunk")
 	}
-	response := sendFileUploadReq(m.oauth, size)
-	return sendVideoUploadReq(file, size, response)
+	response := t.sendFileUploadReq(size)
+	return t.sendVideoUploadReq(file, size, response)
 }
 
-func sendVideoUploadReq(file *os.File, size int64, response tiktok.FileUploadResponse) string {
-	byteRange := fmt.Sprintf("bytes 0-%d/%d", size-1, size)
-	videoUploadReq := tiktok.BuildVideoUploadRequest(file, byteRange, response.Data.UploadURL)
-	fmt.Println(videoUploadReq)
-	res, err := client.SendRequest(videoUploadReq)
-	if err != nil {
-		panic(err)
-	}
-	return string(res)
-}
-
-func sendFileUploadReq(oauth tiktok.OAuthToken, size int64) tiktok.FileUploadResponse {
-	fileUploadReq := tiktok.BuildFileUploadRequest(oauth.AccessToken, size)
-	fmt.Println(fileUploadReq)
+// sendFileUploadReq sends a request to allow uploading a video of the specified size to TikTok's API and returns the response from that call
+// as a FileUploadResponse struct. This must be invoked before sendVideoUploadReq to initiate an upload request.
+func (t *TikTokManager) sendFileUploadReq(size int64) tiktok.FileUploadResponse {
+	fileUploadReq := tiktok.BuildFileUploadRequest(t.oauthToken, size)
 	res, err := client.SendRequest(fileUploadReq)
 	if err != nil {
 		panic(err)
@@ -75,73 +81,15 @@ func sendFileUploadReq(oauth tiktok.OAuthToken, size int64) tiktok.FileUploadRes
 	return videoUploadRes
 }
 
-func fetchTiktokOAuth(clientKey string, clientSecret string) tiktok.OAuthToken {
-	codeVerifier := generateCodeVerifier(64)
-	codeChallenge := generateRawCodeChallenge(codeVerifier)
-	code := authenticateTikTokUser(clientKey, codeChallenge)
-	oauth := sendTikTokOAuthRequest(clientKey, clientSecret, code, codeVerifier)
-	writeToFile(oauth)
-	return oauth
-}
-
-func generateCodeVerifier(length int) string {
-	const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~"
-	var result strings.Builder
-	for i := 0; i < length; i++ {
-		index, _ := rand.Int(rand.Reader, big.NewInt(int64(len(chars))))
-		result.WriteByte(chars[index.Int64()])
-	}
-	return result.String()
-}
-
-func generateRawCodeChallenge(codeVerifier string) string {
-	hash := sha256.New()
-	hash.Write([]byte(codeVerifier))
-	hashBytes := hash.Sum(nil)
-	return fmt.Sprintf("%x", hashBytes)
-}
-
-func authenticateTikTokUser(clientKey string, codeChallenge string) string {
-	authRequest := tiktok.BuildAuthenticationRequest(clientKey, codeChallenge)
-	log.Print("Invoking TikTok Login request")
-	fmt.Println(authRequest.URL.String())
-	codeChan := make(chan string)
-	serverDone := &sync.WaitGroup{}
-	serverDone.Add(1)
-	server.StartCallbackServer(serverDone, codeChan)
-	value := <-codeChan
-	return value
-}
-
-func sendTikTokOAuthRequest(clientKey string, clientSecret string, code string, codeVerifier string) tiktok.OAuthToken {
-	oauthReq := tiktok.BuildOAuthRequest(clientKey, clientSecret, code, codeVerifier)
-	log.Print("Invoking TikTok OAuth request")
-	responseBody, err := client.SendRequest(oauthReq)
+// sendVideoUploadReq sends a request to upload the video represented by the specified file and size. In addition, it takes
+// in a FileUploadResponse from a sendFileUploadReq call which is a pre-requisite when uploading onto a TikTok account via an API.
+// Returns a string representing the body of the video upload request.
+func (t *TikTokManager) sendVideoUploadReq(file *os.File, size int64, response tiktok.FileUploadResponse) string {
+	byteRange := fmt.Sprintf("bytes 0-%d/%d", size-1, size)
+	videoUploadReq := tiktok.BuildVideoUploadRequest(file, byteRange, response.Data.UploadURL)
+	res, err := client.SendRequest(videoUploadReq)
 	if err != nil {
 		panic(err)
 	}
-	var oauthResponse tiktok.OAuthToken
-	fmt.Println(string(responseBody))
-	err = json.Unmarshal(responseBody, &oauthResponse)
-	if err != nil {
-		panic(err)
-	}
-	return oauthResponse
-}
-
-func writeToFile(o tiktok.OAuthToken) {
-	file, err := os.Create("tiktok_oauth_resp.json")
-	if err != nil {
-		log.Print(err)
-	}
-	defer file.Close()
-
-	data, err := json.MarshalIndent(o, "", "  ")
-	if err != nil {
-		log.Print(err)
-	}
-	_, err = file.Write(data)
-	if err != nil {
-		log.Print(err)
-	}
+	return string(res)
 }

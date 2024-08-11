@@ -7,6 +7,9 @@ import (
 	"net/http"
 )
 
+// BuildFileUploadRequest defines the TikTok API's file upload request with the given
+// oauth and videosize. Assumes we are only sending 1 chunk with the entire video contents.
+// Returns a http.Request with all request values preconfigured.
 func BuildFileUploadRequest(oauth string, videoSize int64) *http.Request {
 	const fileUploadEndpoint = "https://open.tiktokapis.com/v2/post/publish/inbox/video/init/"
 
@@ -15,6 +18,9 @@ func BuildFileUploadRequest(oauth string, videoSize int64) *http.Request {
 	return request.ToHttpRequest(request.POST, fileUploadEndpoint, nil, headers, body)
 }
 
+// buildFileUploadRequestBody defines the body of the file upload request.
+// It takes in videoSize, chunkSize, and totalChunk count which are contingent on the
+// size of the file you want to upload. Returns a buffer with the contents of the body.
 func buildFileUploadRequestBody(videoSize int64, chunkSize int64, totalChunkCount int) *bytes.Buffer {
 	contents := map[string]interface{}{
 		"source":            "FILE_UPLOAD",
@@ -33,13 +39,16 @@ func buildFileUploadRequestBody(videoSize int64, chunkSize int64, totalChunkCoun
 	return buffer
 }
 
-func BuildQueryCreatorInfoRequest(oauth string) *http.Request {
-	const tiktokQueryCreatorInfoEndpoint = "https://open.tiktokapis.com/v2/post/publish/creator_info/query/"
+//
+//func BuildQueryCreatorInfoRequest(oauth string) *http.Request {
+//	const tiktokQueryCreatorInfoEndpoint = "https://open.tiktokapis.com/v2/post/publish/creator_info/query/"
+//
+//	headers := buildAuthorizationHeaders(oauth)
+//	return request.ToHttpRequest(request.POST, tiktokQueryCreatorInfoEndpoint, nil, headers, nil)
+//}
 
-	headers := buildAuthorizationHeaders(oauth)
-	return request.ToHttpRequest(request.POST, tiktokQueryCreatorInfoEndpoint, nil, headers, nil)
-}
-
+// buildAuthorizationHeaders defines the headers that are required for the file upload request to
+// TikTok's API.
 func buildAuthorizationHeaders(oauth string) map[string][]string {
 	headers := map[string][]string{}
 	headers["Authorization"] = []string{"Bearer " + oauth}

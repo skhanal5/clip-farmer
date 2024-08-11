@@ -1,10 +1,109 @@
-## clip-farmer
+# clip-farmer
 Automating the process of selecting, editing, and producing short-form content from existing media sources
 
-### Disclaimer
-This project is intended for educational purposes only. The author(s) of this project are not liable for any misuse or damage that may arise from the use of this project. Users of this project are responsible for ensuring that their use complies with all applicable laws, terms of service, and policies of third-party services.
+## Disclaimer
+This project is intended for educational purposes only. The author(s) of this project are not liable for any misuse or damage that may arise from the use of this project. Users of this project are responsible for ensuring that their use complies with all applicable laws, terms of service, and policies of third-party services. 
 
-Please use this project responsibly and ethically.
+Please use this project responsibly and ethically.  
+
+## Usage
+
+### Build
+Run `go build -o clip-farmer.exe` to build the executable in the project root if it already doesn't exist.
+
+### Config
+
+#### TikTok Config
+To set the TikTok environment variables in the app config use the following command:
+```
+.\clip-farmer.exe config tiktok --client-key [insert-client-key] --client-secret [insert-client-secret]
+```
+
+#### Twitch Config
+To set the Twitch environment variables in the app config use the following command:
+```
+.\clip-farmer.exe config twitch --client-id [insert-client-id] --client-oauth [insert-client-oauth]
+```
+
+**Note**: A side effect of running either command is that it will generate a `config.yaml` file in the project
+root directory which is when the CLI is initially loaded. This makes it so, you do not have to set these values
+each time you want to use it.
+
+### Fetch
+
+There are two subcommands under the fetch command, `oauth` and `clips`
+
+#### OAuth
+You can fetch the TikTok OAuth token for the account you'd like to post on
+with the following command:
+```
+.\clip-farmer.exe fetch oauth tiktok
+```
+This will produce a link where you can authorize the application to access your account with the necessary
+scopes. Once the authorization flow is complete, it will fetch the OAuth token and set it as an environment variable
+for later use. One side effect, is that this will also produce a `tiktok_oauth_resp.json` file which will allow us
+to re-use existing tokens and refresh tokens on expiration.
+
+#### Clips
+You can fetch clips from Twitch from a given user with the following command:
+```
+.\clip-farmer.exe fetch clips twitch --user [insert-twitch-username]
+```
+This will download clips of that user under the `clips/[username]/` directory in the project root.
+
+### Post
+
+**Note**: for this command to work as intended, you must invoke the fetch oauth command as a prerequisite at least
+once. This is because posting requires a valid OAuth token.
+
+You can post a video onto TikTok with the following command:
+```
+.\clip-farmer.exe post tiktok --file [path-to-video-file]       
+```
+
+Alternatively, you can post all videos under a directory with the following command:
+```
+.\clip-farmer.exe post tiktok --directory [path-to-video-file] 
+```
+
+### Help
+You can get help when interacting with the cli with either the `--help` or `-h` flags at any command-level.
+
+For example, if you are having setting your TikTok configuration, you can run:
+```
+    .\clip-farmer.exe config tiktok -h
+```
+
+You will get an output like so:
+```
+Configure TikTok environment variables
+
+Usage:
+  clip-farmer config tiktok [flags]
+
+Flags:
+  -k, --client-key string      Set the client-key of the TikTok app that we want to connect to.
+  -s, --client-secret string   Set the client-secret of the TikTok app that we want to connect to.
+  -h, --help                   help for tiktok
+```
+
+Or, if you are having trouble posting specifically to TikTok
+```
+.\clip-farmer.exe post tiktok -h  
+
+```
+You will get an output like so:
+```
+Post short-form content onto TikTok
+
+Usage:
+  clip-farmer post tiktok [flags]
+
+Flags:
+  -d, --directory string   Path to the directory with all the videos that we want to post onto TikTok.
+  -f, --file string        Path to the file containing the video that we want to post onto TikTok.
+  -h, --help               help for tiktok
+```
 
 ### Local Development
 
@@ -23,22 +122,6 @@ application it is recommended that you make a Sandbox account.
 In addition to the above, the application requires you to register an `Target User` so that you can post content
 on that account's behalf. We make use of the `TIKTOK_CLIENT_KEY` and `TIKTOK_CLIENT_SECRET` to fetch an OAuth
 token on behalf of that user.
-
-#### Environment Variables
-
-Altogether, you will need to pass in the following secret values in the config.yaml file:
-
-```
-secrets:
-  twitch:
-    client-id: 
-    client-oauth:
-  tiktok:
-    client-key: 
-    client-secret:
-query:
-  twitch-creator: stableronaldo
-```
 
 #### Running the Application
 From there, you can run the `main.go` file using the command `go run ./cmd` to start the application

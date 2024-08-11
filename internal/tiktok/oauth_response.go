@@ -1,5 +1,6 @@
 package tiktok
 
+// OAuthToken represents the response from a TikTok oauth request.
 type OAuthToken struct {
 	AccessToken      string `json:"access_token"`
 	ExpiresIn        int    `json:"expires_in"`
