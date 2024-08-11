@@ -33,4 +33,5 @@ func init() {
 		"Set the client-id of the Twitch user that we want to send authenticated requests from.")
 	twitchConfigCmd.Flags().StringVarP(&clientOAuth, "client-oauth", "o", "",
 		"Set the client-oauth of the Twitch user that we want to send authenticated requests from.")
+	twitchConfigCmd.MarkFlagsRequiredTogether("client-id", "client-oauth")
 }

@@ -34,4 +34,5 @@ func init() {
 		"Set the client-key of the TikTok app that we want to connect to.")
 	tiktokConfigCmd.Flags().StringVarP(&clientSecret, "client-secret", "s", "",
 		"Set the client-secret of the TikTok app that we want to connect to.")
+	tiktokConfigCmd.MarkFlagsRequiredTogether("client-key", "client-secret")
 }

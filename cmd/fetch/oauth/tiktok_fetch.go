@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/skhanal5/clip-farmer/cmd/config"
 	"github.com/skhanal5/clip-farmer/internal/tiktok"
 	"github.com/skhanal5/clip-farmer/manager"
 	"github.com/spf13/viper"
@@ -24,6 +25,7 @@ var tiktokCmd = &cobra.Command{
 			}
 			setOAuth()
 		}
+		config.SaveConfig("./config.yaml")
 		return nil
 	},
 }

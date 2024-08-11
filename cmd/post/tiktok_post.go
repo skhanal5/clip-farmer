@@ -12,6 +12,7 @@ import (
 
 var (
 	filePath string
+	dirPath  string
 )
 
 // tiktokCmd represents the tiktok command
@@ -20,7 +21,6 @@ var tiktokCmd = &cobra.Command{
 	Short: "Post short-form content onto TikTok",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		manager, err := buildManager()
-
 		if err != nil {
 			return err
 		}
@@ -28,14 +28,20 @@ var tiktokCmd = &cobra.Command{
 		if filePath != "" {
 			manager.UploadVideo(filePath)
 		}
+		if dirPath != "" {
+			manager.UploadVideos(dirPath)
+		}
 		return nil
 	},
 }
 
 func init() {
 	postCmd.AddCommand(tiktokCmd)
-	tiktokCmd.Flags().StringVarP(&filePath, "path", "p", "",
-		"Path to the file containing the media that we want to post onto TikTok.")
+	tiktokCmd.Flags().StringVarP(&filePath, "file", "f", "",
+		"Path to the file containing the video that we want to post onto TikTok.")
+	tiktokCmd.Flags().StringVarP(&dirPath, "directory", "d", "",
+		"Path to the directory with all the videos that we want to post onto TikTok.")
+	tiktokCmd.MarkFlagsMutuallyExclusive("file", "directory")
 }
 
 func buildManager() (manager.TikTokManager, error) {
