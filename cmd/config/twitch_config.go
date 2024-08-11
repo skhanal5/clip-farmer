@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -14,16 +15,14 @@ var (
 var twitchConfigCmd = &cobra.Command{
 	Use:   "twitch",
 	Short: "Configure Twitch environment variables",
-	Run: func(cmd *cobra.Command, args []string) {
-		clientId, _ := cmd.Flags().GetString("client-id")
-		clientOAuth, _ := cmd.Flags().GetString("client-oauth")
-		if clientId != "" {
-			viper.Set("secrets.twitch.client-id", clientId)
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if clientId == "" || clientOAuth == "" {
+			return errors.New("you must provide a client id and client oauth")
 		}
-		if clientOAuth != "" {
-			viper.Set("secrets.twitch.client-oauth", clientOAuth)
-		}
+		viper.Set("secrets.twitch.client-id", clientId)
+		viper.Set("secrets.twitch.client-oauth", clientOAuth)
 		SaveConfig("./config.yaml")
+		return nil
 	},
 }
 
