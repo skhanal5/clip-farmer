@@ -1,5 +1,5 @@
 # clip-farmer
-Automating the process of selecting, editing, and producing short-form content from existing media sources
+A cli tool that simplifies the process of selecting, editing, and producing short-form content from existing media sources
 
 ## Disclaimer
 This project is intended for educational purposes only. The author(s) of this project are not liable for any misuse or damage that may arise from the use of this project. Users of this project are responsible for ensuring that their use complies with all applicable laws, terms of service, and policies of third-party services. 
@@ -12,6 +12,8 @@ Please use this project responsibly and ethically.
 Run `go build -o clip-farmer.exe` to build the executable in the project root if it already doesn't exist.
 
 ### Config
+
+You will need secret values from Twitch and TikTok to use this application, refer to [local development](#local-development)
 
 #### TikTok Config
 To set the TikTok environment variables in the app config use the following command:
@@ -90,7 +92,6 @@ Flags:
 Or, if you are having trouble posting specifically to TikTok
 ```
 .\clip-farmer.exe post tiktok -h  
-
 ```
 You will get an output like so:
 ```
@@ -117,11 +118,6 @@ This can be retrieved from your browser's console after authenticating into Twit
 #### TikTok Credentials
 Next, you will need the `TIKTOK_CLIENT_KEY` and `TIKTOK_CLIENT_SECRET` values from
 your registered application on the [TikTok Developer Dashboard](https://developers.tiktok.com/apps). When registering, your
-application it is recommended that you make a Sandbox account.
-
-In addition to the above, the application requires you to register an `Target User` so that you can post content
+application it is recommended that you make a Sandbox account. In your register application, allocate a `Target User` so that you can post content
 on that account's behalf. We make use of the `TIKTOK_CLIENT_KEY` and `TIKTOK_CLIENT_SECRET` to fetch an OAuth
 token on behalf of that user.
-
-#### Running the Application
-From there, you can run the `main.go` file using the command `go run ./cmd` to start the application
