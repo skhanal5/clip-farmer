@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"github.com/spf13/viper"
 
 	"github.com/spf13/cobra"
@@ -16,14 +15,10 @@ var (
 var tiktokConfigCmd = &cobra.Command{
 	Use:   "tiktok",
 	Short: "Configure TikTok environment variables",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if clientKey == "" || clientSecret == "" {
-			return errors.New("you must provide a client key and client secret")
-		}
+	Run: func(cmd *cobra.Command, args []string) {
 		viper.Set("secrets.tiktok.client-key", clientKey)
 		viper.Set("secrets.tiktok.client-secret", clientSecret)
 		SaveConfig("./config.yaml")
-		return nil
 	},
 }
 
