@@ -1,7 +1,8 @@
 package fetch
 
 import (
-	"fmt"
+	"github.com/skhanal5/clip-farmer/cmd/fetch/clips"
+	"github.com/skhanal5/clip-farmer/cmd/fetch/oauth"
 	"github.com/spf13/cobra"
 )
 
@@ -9,11 +10,10 @@ import (
 var FetchCmd = &cobra.Command{
 	Use:   "fetch",
 	Short: "Retrieve data from different media sources",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("fetch called")
-	},
 }
 
 func Init() *cobra.Command {
+	FetchCmd.AddCommand(clips.Init())
+	FetchCmd.AddCommand(oauth.Init())
 	return FetchCmd
 }

@@ -3,7 +3,7 @@ package oauth
 import (
 	"encoding/json"
 	"errors"
-	"github.com/skhanal5/clip-farmer/cmd/fetch"
+	"fmt"
 	"github.com/skhanal5/clip-farmer/internal/tiktok"
 	"github.com/skhanal5/clip-farmer/manager"
 	"github.com/spf13/viper"
@@ -29,7 +29,7 @@ var tiktokCmd = &cobra.Command{
 }
 
 func init() {
-	fetch.FetchCmd.AddCommand(tiktokCmd)
+	oauthCmd.AddCommand(tiktokCmd)
 }
 
 func validateTikTokSecrets() error {
@@ -70,4 +70,12 @@ func loadExistingPreviousToken() error {
 	// add autorefresh validation logic
 	viper.Set("secrets.tiktok.client-oauth", oauthResponse.AccessToken)
 	return nil
+}
+
+func saveConfig(path string) {
+	viper.SetConfigFile(path)
+	err := viper.WriteConfig()
+	if err != nil {
+		fmt.Println("Failed to write config:", err)
+	}
 }

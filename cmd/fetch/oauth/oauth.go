@@ -2,8 +2,6 @@ package oauth
 
 import (
 	"fmt"
-	"github.com/skhanal5/clip-farmer/cmd/fetch"
-
 	"github.com/spf13/cobra"
 )
 
@@ -16,6 +14,6 @@ var oauthCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	fetch.FetchCmd.AddCommand(oauthCmd)
+func Init() *cobra.Command {
+	return oauthCmd
 }
