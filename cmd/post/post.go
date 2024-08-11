@@ -1,8 +1,7 @@
-package cmd
+package post
 
 import (
 	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -15,6 +14,6 @@ var postCmd = &cobra.Command{
 	},
 }
 
-func init() {
-	rootCmd.AddCommand(postCmd)
+func Init() *cobra.Command {
+	return postCmd
 }

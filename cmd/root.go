@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/skhanal5/clip-farmer/cmd/config"
 	"github.com/skhanal5/clip-farmer/cmd/fetch"
+	"github.com/skhanal5/clip-farmer/cmd/post"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -28,6 +29,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.AddCommand(config.Init())
 	rootCmd.AddCommand(fetch.Init())
+	rootCmd.AddCommand(post.Init())
 }
 
 // initConfig reads in config file and ENV variables if set.

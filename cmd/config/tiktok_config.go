@@ -14,7 +14,7 @@ var (
 // tiktokCmd represents the tiktok subcommand
 var tiktokConfigCmd = &cobra.Command{
 	Use:   "tiktok",
-	Short: "Set TikTok configuration",
+	Short: "Configure TikTok environment variables",
 	Run: func(cmd *cobra.Command, args []string) {
 		clientKey, _ := cmd.Flags().GetString("client-key")
 		clientSecret, _ := cmd.Flags().GetString("client-secret")

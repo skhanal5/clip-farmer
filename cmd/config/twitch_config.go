@@ -13,7 +13,7 @@ var (
 // twitchCmd represents the twitch subcommand
 var twitchConfigCmd = &cobra.Command{
 	Use:   "twitch",
-	Short: "Set Twitch configuration",
+	Short: "Configure Twitch environment variables",
 	Run: func(cmd *cobra.Command, args []string) {
 		clientId, _ := cmd.Flags().GetString("client-id")
 		clientOAuth, _ := cmd.Flags().GetString("client-oauth")

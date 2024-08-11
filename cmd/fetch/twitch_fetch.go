@@ -15,7 +15,7 @@ var (
 // twitchCmd represents the twitch subcommand
 var twitchCmd = &cobra.Command{
 	Use:   "twitch",
-	Short: "Set TikTok configuration",
+	Short: "Fetch content from Twitch",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		manager, err := buildManager()
 
@@ -32,7 +32,8 @@ var twitchCmd = &cobra.Command{
 
 func init() {
 	fetchCmd.AddCommand(twitchCmd)
-	twitchCmd.Flags().StringVarP(&user, "user", "u", "", "Twitch username")
+	twitchCmd.Flags().StringVarP(&user, "user", "u", "",
+		"Twitch username of the creator whose content we want to fetch and download.")
 }
 
 func buildManager() (manager.TwitchManager, error) {
