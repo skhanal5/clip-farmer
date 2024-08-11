@@ -1,5 +1,6 @@
 package twitch
 
+// ClipDownloadResponse contains metadata of a particular clip slug
 type ClipDownloadResponse struct {
 	Data       ClipData           `json:"data"`
 	Extensions ResponseExtensions `json:"extensions"`

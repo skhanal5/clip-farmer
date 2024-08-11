@@ -9,11 +9,13 @@ import (
 	"time"
 )
 
+// TwitchManager contains all necessary secret values required to interact with Twitch's API
 type TwitchManager struct {
 	clientId    string
 	clientOAuth string
 }
 
+// InitTwitchManager defines a TwitchManager with the secret values passed in
 func InitTwitchManager(clientId string, clientOAuth string) TwitchManager {
 	return TwitchManager{
 		clientId:    clientId,
@@ -21,24 +23,26 @@ func InitTwitchManager(clientId string, clientOAuth string) TwitchManager {
 	}
 }
 
+// FetchAndDownloadClips retrieves the clips from the user and downloads it into the local filesystem
 func (t *TwitchManager) FetchAndDownloadClips(user string) {
 	const requestDelay = 5 * time.Second // Delay between download attempts
 
-	userRes := fetchUser(t.clientId, t.clientOAuth, user)
+	userRes := t.fetchUser(user)
 
 	edges := userRes.Data.User.Clips.Edges
 	clips := make([]twitch.Clip, 0)
 	for _, edge := range edges {
 		slug := edge.Node.Slug
 		time.Sleep(requestDelay)
-		clip := fetchClipDownloadInfo(t.clientId, t.clientOAuth, slug)
+		clip := t.fetchClipDownloadInfo(slug)
 		clips = append(clips, clip.Data.Clip)
 	}
-	downloader.DownloadClips(user, clips)
+	downloader.DownloadTwitchClips(user, clips)
 }
 
-func fetchUser(clientId string, clientOAuth string, targetUser string) twitch.UserResponse {
-	userRequest := twitch.BuildGQLTwitchUserRequest(targetUser, clientId, clientOAuth)
+// fetchUser fetches clip data from the target user and returns it as a UserResponse
+func (t *TwitchManager) fetchUser(targetUser string) twitch.UserResponse {
+	userRequest := twitch.BuildGQLTwitchUserRequest(targetUser, t.clientId, t.clientOAuth)
 	log.Print("Getting user: " + targetUser + " through Twitch GQL API")
 	body, err := client.SendRequest(userRequest)
 	if err != nil {
@@ -53,8 +57,9 @@ func fetchUser(clientId string, clientOAuth string, targetUser string) twitch.Us
 	return gqlResponse
 }
 
-func fetchClipDownloadInfo(clientId string, clientOAuth string, clipId string) twitch.ClipDownloadResponse {
-	clipsRequest := twitch.BuildTwitchClipDownloadRequest(clipId, clientId, clientOAuth)
+// fetchClipDownloadInfo fetches metadata from the given clip with clipId and returns it as a ClipDownloadResponse
+func (t *TwitchManager) fetchClipDownloadInfo(clipId string) twitch.ClipDownloadResponse {
+	clipsRequest := twitch.BuildTwitchClipDownloadRequest(clipId, t.clientId, t.clientOAuth)
 	log.Print("Getting clip download info for clip with id: " + clipId + " through Twitch GQL API")
 	responseBody, err := client.SendRequest(clipsRequest)
 	if err != nil {

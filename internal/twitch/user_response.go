@@ -1,5 +1,6 @@
 package twitch
 
+// UserResponse represents a response containing metadata from a particular Twitch User
 type UserResponse struct {
 	Data       UserData           `json:"data"`
 	Extensions ResponseExtensions `json:"extensions"`

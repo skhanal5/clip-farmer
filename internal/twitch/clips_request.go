@@ -11,12 +11,16 @@ const (
 	twitchGQLAPI = "https://gql.twitch.tv/gql"
 )
 
+// BuildTwitchClipDownloadRequest defines a request to get clip specific metadata of the clip with slug, clipSlug, from the Twitch GQL API.
+// It is an authorized request so it needs both the oauthToken and clientId. Returns a http.Request with all populated values
 func BuildTwitchClipDownloadRequest(clipSlug string, clientId string, oauthToken string) *http.Request {
-	headers := twitchAuthorizationHeadersGQL(clientId, oauthToken)
+	headers := twitchAuthorizationHeaders(clientId, oauthToken)
 	requestBody := buildGQLClipsRequestBody(clipSlug)
 	return request.ToHttpRequest(request.POST, twitchGQLAPI, nil, headers, requestBody)
 }
 
+// buildGQLClipsRequestBody will build a PersistedGQLRequest with the given slug passed in as an input parameter.
+// Returns a buffer with the contents of the request body.
 func buildGQLClipsRequestBody(clipSlug string) *bytes.Buffer {
 	req := PersistedGQLRequest{
 		OperationName: "VideoAccessToken_Clip",
@@ -34,7 +38,8 @@ func buildGQLClipsRequestBody(clipSlug string) *bytes.Buffer {
 	return bytes.NewBuffer(jsonData)
 }
 
-func twitchAuthorizationHeadersGQL(clientId string, oauthToken string) map[string][]string {
+// twitchAuthorizationHeaders builds the authorization headers needed to interact with the Twitch GQL API
+func twitchAuthorizationHeaders(clientId string, oauthToken string) map[string][]string {
 	headers := make(map[string][]string)
 	headers["Authorization"] = []string{"OAuth" + oauthToken}
 	headers["Client-Id"] = []string{clientId}
