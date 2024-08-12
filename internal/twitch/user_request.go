@@ -13,6 +13,8 @@ func BuildGQLTwitchUserRequest(username string, clientId string, oauthToken stri
 	return request.ToHttpRequest(request.POST, twitchGQLAPI, nil, headers, requestBody)
 }
 
+// start
+
 func buildUserReq(username string) *bytes.Buffer {
 	req := GQLRequest{
 		Query: `query($username: String!) {
