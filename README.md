@@ -18,13 +18,13 @@ You will need secret values from Twitch and TikTok to use this application, refe
 #### TikTok Config
 To set the TikTok environment variables in the app config use the following command:
 ```
-.\clip-farmer.exe config tiktok --client-key [insert-client-key] --client-secret [insert-client-secret]
+.\clip-farmer.exe config tiktok --client-key [client-key] --client-secret [client-secret]
 ```
 
 #### Twitch Config
 To set the Twitch environment variables in the app config use the following command:
 ```
-.\clip-farmer.exe config twitch --client-id [insert-client-id] --client-oauth [insert-client-oauth]
+.\clip-farmer.exe config twitch --client-id [client-id] --client-oauth [client-oauth]
 ```
 
 **Note**: A side effect of running either command is that it will generate a `config.yaml` file in the project
@@ -49,9 +49,14 @@ to re-use existing tokens and refresh tokens on expiration.
 #### Clips
 You can fetch clips from Twitch from a given user with the following command:
 ```
-.\clip-farmer.exe fetch clips twitch --user [insert-twitch-username]
+.\clip-farmer.exe fetch clips twitch --user [twitch-username]
 ```
 This will download clips of that user under the `clips/[username]/` directory in the project root.
+
+Alternatively, you can pass in query parameters to filter clips by **time period** and by a **sort** filter. For example:
+```
+.\clip-farmer.exe fetch clips twitch -u [username] -p [period-of-time] -s [sort-filter]
+```
 
 ### Post
 
