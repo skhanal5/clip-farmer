@@ -5,7 +5,8 @@ package post
 
 import (
 	"errors"
-	"github.com/skhanal5/clip-farmer/manager"
+
+	"github.com/skhanal5/clip-farmer/internal/tiktok"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -44,12 +45,12 @@ func init() {
 	tiktokCmd.MarkFlagsMutuallyExclusive("file", "directory")
 }
 
-func buildManager() (manager.TikTokManager, error) {
+func buildManager() (tiktok.TikTokManager, error) {
 	clientOAuth := viper.GetString("secrets.tiktok.client-oauth")
 
 	if clientOAuth == "" {
-		return manager.TikTokManager{}, errors.New("tiktok client-oauth is not configured")
+		return tiktok.TikTokManager{}, errors.New("tiktok client-oauth is not configured")
 	}
 
-	return manager.InitTikTokManager(clientOAuth), nil
+	return tiktok.InitTikTokManager(clientOAuth), nil
 }

@@ -3,13 +3,10 @@ package oauth
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/skhanal5/clip-farmer/cmd/config"
 	"github.com/skhanal5/clip-farmer/internal/tiktok"
-	"github.com/skhanal5/clip-farmer/manager"
 	"github.com/spf13/viper"
 	"os"
-
 	"github.com/spf13/cobra"
 )
 
@@ -51,7 +48,7 @@ func validateTikTokSecrets() error {
 func setOAuth() {
 	clientKey := viper.GetString("secrets.tiktok.client-key")
 	clientSecret := viper.GetString("secrets.tiktok.client-secret")
-	oauth := manager.FetchTiktokOAuth(clientKey, clientSecret)
+	oauth := tiktok.FetchTiktokOAuth(clientKey, clientSecret)
 	viper.Set("secrets.tiktok.client-oauth", oauth)
 }
 
@@ -72,12 +69,4 @@ func loadExistingPreviousToken() error {
 	// add autorefresh validation logic
 	viper.Set("secrets.tiktok.client-oauth", oauthResponse.AccessToken)
 	return nil
-}
-
-func saveConfig(path string) {
-	viper.SetConfigFile(path)
-	err := viper.WriteConfig()
-	if err != nil {
-		fmt.Println("Failed to write config:", err)
-	}
 }
