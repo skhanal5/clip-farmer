@@ -84,7 +84,7 @@ func (t *TwitchManager) fetchClipDownloadInfo(clipId string) ClipDownloadRespons
 const (
 	connectTimeout = 30 * time.Second
 	chunkSize      = 1024 * 1024
-	downloadDelay  = 5 * time.Second
+	downloadDelay  = 20 * time.Second
 )
 
 // DownloadTwitchClips allows you to download the specified array of clips onto the

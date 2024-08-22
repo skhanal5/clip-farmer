@@ -32,7 +32,7 @@ func (t *TikTokManager) UploadVideos(directory string) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		time.Sleep(5 * time.Second)
+		time.Sleep(20 * time.Second)
 		t.UploadVideo(directory + "/" + fileInfo.Name())
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
 
 	"github.com/spf13/cobra"
 )
@@ -17,7 +18,7 @@ var (
 	blurredOption bool
 )
 
-// configCmd represents the config command
+// editCmd represents the edit command
 var editCmd = &cobra.Command{
 	Use:   "edit",
 	Short: "Edit a video",
@@ -68,15 +69,23 @@ func createVideosWithBlurredBackground(inputDir string, outputPath string) {
 		log.Fatal(err)
 	}
 
+	var wg sync.WaitGroup
+
 	for _, file := range dir {
 		fileInfo, err := file.Info()
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		// do this asynchronously
-		createVideoWithBlurredBackground(inputDir + "/" + fileInfo.Name(), outputPath)
+		wg.Add(1)
+		go func () {
+			defer wg.Done()
+			createVideoWithBlurredBackground(inputDir + "/" + fileInfo.Name(), outputPath)	
+		}()
 	}
 
+	wg.Wait()
 }
 
 func getFilename(inputPath string) string{

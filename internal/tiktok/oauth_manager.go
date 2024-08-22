@@ -81,8 +81,10 @@ func sendTikTokOAuthRequest(clientKey string, clientSecret string, code string, 
 	var oauthResponse OAuthToken
 	err = json.Unmarshal(responseBody, &oauthResponse)
 	if err != nil {
+		log.Print(err)
 		panic(err)
 	}
+	log.Println(oauthResponse)
 	log.Print("Received TikTok OAuth details")
 	return oauthResponse
 }
