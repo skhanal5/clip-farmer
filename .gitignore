@@ -1,3 +1,6 @@
-clips
+clips/
 config.yaml
 tiktok_oauth_resp.json
+.idea
+*.mp4
+edit/

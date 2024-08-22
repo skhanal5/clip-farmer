@@ -1,10 +1,13 @@
 package cmd
 
 import (
+	"os"
+
+	"github.com/skhanal5/clip-farmer/cmd/clean"
 	"github.com/skhanal5/clip-farmer/cmd/config"
+	"github.com/skhanal5/clip-farmer/cmd/edit"
 	"github.com/skhanal5/clip-farmer/cmd/fetch"
 	"github.com/skhanal5/clip-farmer/cmd/post"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -30,6 +33,8 @@ func init() {
 	rootCmd.AddCommand(config.Init())
 	rootCmd.AddCommand(fetch.Init())
 	rootCmd.AddCommand(post.Init())
+	rootCmd.AddCommand(edit.Init())
+	rootCmd.AddCommand(clean.Init())
 }
 
 // initConfig reads in config file and ENV variables if set.
