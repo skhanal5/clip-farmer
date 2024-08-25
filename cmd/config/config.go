@@ -1,7 +1,8 @@
 package config
 
 import (
-	"fmt"
+	"log"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -21,6 +22,8 @@ func SaveConfig(path string) {
 	viper.SetConfigFile(path)
 	err := viper.WriteConfig()
 	if err != nil {
-		fmt.Println("Failed to write config:", err)
+		log.Fatal("Failed to write config:", err)
+	} else {
+		log.Printf("Updated config to path: %s", path)
 	}
 }

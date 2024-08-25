@@ -48,7 +48,7 @@ func (t *TwitchManager) FetchAndDownloadClips(user string, period string, sort s
 // fetchUser fetches clip data from the target user and returns it as a UserResponse
 func (t *TwitchManager) fetchUser(targetUser string, period string, sort string) UserResponse {
 	userRequest := BuildGetClipRequest(targetUser, period, sort, t.clientId, t.clientOAuth)
-	log.Print("Getting user: " + targetUser + " through Twitch GQL API with period: " + period + " sort: " + sort)
+	log.Print("Fetching user: " + targetUser + " through Twitch GQL API with period: " + period + " sort: " + sort)
 	body, err := client.SendRequest(userRequest)
 	if err != nil {
 		log.Fatal(err)

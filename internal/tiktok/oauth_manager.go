@@ -53,10 +53,10 @@ func generateRawCodeChallenge(codeVerifier string) string {
 // Returns a string representing the authentication_code
 func authenticateTikTokUser(clientKey string, codeChallenge string) string {
 	authRequest := BuildAuthenticationRequest(clientKey, codeChallenge)
-	log.Print("Invoking TikTok Login request")
+	log.Println("Invoking TikTok Login request")
 
 	// Generates the authentication URL containing all necessary scopes
-	fmt.Println("Authenticate using this link: " + authRequest.URL.String())
+	log.Println("Authenticate using this link: " + authRequest.URL.String())
 
 	codeChan := make(chan string)
 	serverDone := &sync.WaitGroup{}
@@ -84,7 +84,6 @@ func sendTikTokOAuthRequest(clientKey string, clientSecret string, code string, 
 		log.Print(err)
 		panic(err)
 	}
-	log.Println(oauthResponse)
 	log.Print("Received TikTok OAuth details")
 	return oauthResponse
 }
