@@ -76,13 +76,7 @@ func createVideosWithBlurredBackground(inputDir string, outputPath string) {
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		// do this asynchronously
-		wg.Add(1)
-		go func () {
-			defer wg.Done()
-			createVideoWithBlurredBackground(inputDir + "/" + fileInfo.Name(), outputPath)	
-		}()
+		createVideoWithBlurredBackground(inputDir + "/" + fileInfo.Name(), outputPath)	
 	}
 
 	wg.Wait()
@@ -104,7 +98,7 @@ func createVideoWithBlurredBackground(inputPath string, outputDir string) {
 	// Change resolution to TikTok's viewport
 	// Apply box blur
 	// Remove audio
-	cmd := exec.Command("ffmpeg", "-i", inputPath, "-s", "1080x1920", "-vf", "boxblur=50", "-an", "bin/tmp.mp4")
+	cmd := exec.Command("ffmpeg", "-i", inputPath, "-vf", "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=50", "-an", "bin/tmp.mp4")
 	fmt.Println(cmd.Args)
 	_, err = cmd.CombinedOutput()
 	
@@ -112,12 +106,12 @@ func createVideoWithBlurredBackground(inputPath string, outputDir string) {
 	defer deleteTmpFiles()
 	
 	if err != nil {
-		log.Fatalf("Failed to blur video")
+		log.Fatalf("Failed to blur video. Error: %s", err)
 	} 
 	
 	// then overlay the video with the "clear" version
 	log.Print("Overlaying the original video on top of the blurred video.")
-	outputFilePath := outputPath + getFilename(inputPath)
+	outputFilePath := outputDir + "/" + getFilename(inputPath)
 	cmd = exec.Command("ffmpeg", "-i", "bin/tmp.mp4", "-i", inputPath, "-filter_complex", "[1:v]scale=1080:607[ovr];[0:v][ovr]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2", outputFilePath)
 	fmt.Println(cmd.Args)
 	

@@ -2,6 +2,7 @@ package clean
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -39,7 +40,10 @@ func deleteAll(inputDir string) {
 	err := os.RemoveAll(inputDir)
 	if err != nil {
 		log.Fatal(err)
+	} else {
+		log.Printf("Successfully deleted all videos in directory: %s", inputDir)
 	}
+	
 }
 
 func deleteAllWithDurationFilter(duration int) {
@@ -50,10 +54,11 @@ func deleteAllWithDurationFilter(duration int) {
 
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
-
+	var count int
 	for _, file := range dir {
-		file, err := os.Open(file.Name())
-
+		filePath := inputDir + "/" + file.Name()
+		file, err := os.Open(filePath)
+		fmt.Println(file)
 		if err != nil {
 			log.Panicf("Error opening file: %v", err)
 		}
@@ -62,10 +67,16 @@ func deleteAllWithDurationFilter(duration int) {
 		if err != nil {
 			log.Panicf("Error probing file: %v", err)
 		}
-
 		if (data.Format.DurationSeconds <= float64(duration)) {
-			os.Remove(file.Name())
+			fmt.Println("HERE")
+			err := os.Remove(filePath)
+			if err != nil {
+				log.Print(err)
+			} else {
+				count += 1
+			}
 		}
 	}
+	log.Printf("Successfully deleted %d videos that were <= %d seconds", count, duration)
 
 }

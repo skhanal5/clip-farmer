@@ -32,7 +32,7 @@ func (t *TwitchManager) FetchAndDownloadClips(user string, period string, sort s
 	const requestDelay = 5 * time.Second // Delay between download attempts
 
 	userRes := t.fetchUser(user, period, sort)
-
+	time.Sleep(requestDelay)
 	edges := userRes.Data.User.Clips.Edges
 	clips := make([]Clip, 0)
 	for _, edge := range edges {
