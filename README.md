@@ -58,6 +58,19 @@ Alternatively, you can pass in query parameters to filter clips by **time period
 .\clip-farmer.exe fetch clips twitch -u [username] -p [period-of-time] -s [sort-filter]
 ```
 
+### Edit
+You can edit downloaded clips by using the edit command and the type of edit you would like. To edit in bulk:
+```
+.\clip-farmer.exe edit --directory [directory] --output [output-directory] --blurred
+```
+
+Alternatively, to edit an individual file
+```
+.\clip-farmer.exe edit --file [file] --output [output-directory] --blurred
+```
+
+This library supports one edit option which is `blurred`. This will take a clip and produce a 1080x1920 video where the clip is centered in the middle of the screen and overlayed ontop of a blurred background. The blurred background is the same clip but stretched out to fit the resolution. 
+
 ### Post
 
 **Note**: for this command to work as intended, you must invoke the fetch oauth command as a prerequisite at least
@@ -71,6 +84,16 @@ You can post a video onto TikTok with the following command:
 Alternatively, you can post all videos under a directory with the following command:
 ```
 .\clip-farmer.exe post tiktok --directory [path-to-video-file] 
+```
+
+### Clean
+This command will clean up any directories containing clips on your local filesystem.
+```
+ .\clip-farmer.exe clean --directory [directory] 
+```
+Alternatively, you can add a filter to delete all videos that are less than or equal to a `duration`:
+```
+ .\clip-farmer.exe clean --directory [directory] --duration [seconds]
 ```
 
 ### Help
