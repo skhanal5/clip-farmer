@@ -71,7 +71,7 @@ func deleteAllWithDurationFilter(duration int) {
 			fmt.Println("HERE")
 			err := os.Remove(filePath)
 			if err != nil {
-				log.Print(err)
+				log.Println(err)
 			} else {
 				count += 1
 			}

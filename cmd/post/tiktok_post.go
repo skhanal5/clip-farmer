@@ -44,7 +44,7 @@ func init() {
 }
 
 func buildManager() (tiktok.TikTokManager, error) {
-	log.Print("Building TikTok Manager")
+	log.Println("Building TikTok Manager")
 	clientOAuth := viper.GetString("secrets.tiktok.client-oauth")
 	if clientOAuth == "" {
 		return tiktok.TikTokManager{}, errors.New("tiktok client-oauth is not configured")

@@ -27,9 +27,7 @@ To set the Twitch environment variables in the app config use the following comm
 .\clip-farmer.exe config twitch --client-id [client-id] --client-oauth [client-oauth]
 ```
 
-**Note**: A side effect of running either command is that it will generate a `config.yaml` file in the project
-root directory which is when the CLI is initially loaded. This makes it so, you do not have to set these values
-each time you want to use it.
+**Note**: A side effect of running either command is that it will generate a `config.yaml` file in the project root directory.The values in this file are loaded into memory during the initialization of the "root" command. Producing this file makes it so that you do not have to set these values each time you want to use the CLI.
 
 ### Fetch
 
@@ -43,7 +41,7 @@ with the following command:
 ```
 This will produce a link where you can authorize the application to access your account with the necessary
 scopes. Once the authorization flow is complete, it will fetch the OAuth token and set it as an environment variable
-for later use. One side effect, is that this will also produce a `tiktok_oauth_resp.json` file which will allow us
+for later use. One side effect is that this will also produce a `tiktok_oauth_resp.json` file which will allow us
 to re-use existing tokens and refresh tokens on expiration.
 
 #### Clips
