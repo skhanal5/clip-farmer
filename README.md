@@ -57,7 +57,7 @@ Alternatively, you can pass in query parameters to filter clips by **time period
 ```
 
 ### Edit
-**Prerequisite:** To edit clips, you must have ffmpeg installed on your local envrionment. I am not distributing this.
+**Prerequisite:** To edit clips, you must have ffmpeg installed on your local environment. I am not distributing this.
 
 You can edit downloaded clips by using the edit command and the type of edit you would like. To edit in bulk:
 ```
@@ -95,6 +95,8 @@ Alternatively, you can add a filter to delete all videos that are less than or e
 ```
  .\clip-farmer.exe clean --directory [directory] --duration [seconds]
 ```
+**Note:** To clean clips with filter, you must have ffmpeg/ffprobe installed on your local environment.
+
 
 ### Help
 You can get help when interacting with the cli with either the `--help` or `-h` flags at any command-level.
