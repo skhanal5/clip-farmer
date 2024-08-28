@@ -2,6 +2,7 @@ package clips
 
 import (
 	"errors"
+	"log"
 
 	"github.com/skhanal5/clip-farmer/internal/twitch"
 	"github.com/spf13/viper"
@@ -47,6 +48,7 @@ func init() {
 }
 
 func buildManager() (twitch.TwitchManager, error) {
+	log.Print("Building Twitch Manager")
 	clientId := viper.GetString("secrets.twitch.client-id")
 	clientOAuth := viper.GetString("secrets.twitch.client-oauth")
 

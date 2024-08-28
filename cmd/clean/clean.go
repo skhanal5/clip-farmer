@@ -39,7 +39,10 @@ func deleteAll(inputDir string) {
 	err := os.RemoveAll(inputDir)
 	if err != nil {
 		log.Fatal(err)
+	} else {
+		log.Printf("Successfully deleted all videos in directory: %s", inputDir)
 	}
+	
 }
 
 func deleteAllWithDurationFilter(duration int) {
@@ -48,24 +51,43 @@ func deleteAllWithDurationFilter(duration int) {
 		log.Fatal(err)
 	}
 
-	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancelFn()
-
+	var count int
 	for _, file := range dir {
-		file, err := os.Open(file.Name())
-
-		if err != nil {
-			log.Panicf("Error opening file: %v", err)
-		}
-
-		data, err := ffprobe.ProbeReader(ctx, file)
-		if err != nil {
-			log.Panicf("Error probing file: %v", err)
-		}
-
-		if (data.Format.DurationSeconds <= float64(duration)) {
-			os.Remove(file.Name())
+		filePath := inputDir + "/" + file.Name()
+		if (validateFileDuration(filePath, duration)) {
+			count += 1
 		}
 	}
+	log.Printf("Successfully deleted %d videos that were <= %d seconds", count, duration)
 
+}
+
+func validateFileDuration(filePath string, duration int) bool {
+	fileDuration := getDuration(filePath)
+	
+	if fileDuration > float64(duration) {
+		return false
+	}
+
+	time.Sleep(100 * time.Millisecond)
+	return removeFile(filePath)
+}
+
+func getDuration(filePath string) float64 {
+	ctx, cancelFn := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancelFn()
+	data, err := ffprobe.ProbeURL(ctx, filePath)
+	if err != nil {
+		log.Fatalf("Error probing file: %v", err)
+	}
+	return data.Format.DurationSeconds
+}
+
+func removeFile(filePath string) bool {
+	err := os.Remove(filePath)
+	if err != nil {
+		log.Println(err)
+		return false
+	}
+	return true
 }

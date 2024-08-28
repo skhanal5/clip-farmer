@@ -39,6 +39,7 @@ func (t *TikTokManager) UploadVideos(directory string) {
 
 // UploadVideo uploads the specified video in the filePath onto the TikTok account
 func (t *TikTokManager) UploadVideo(filepath string) {
+	log.Printf("Uploading video in path: %s to TikTok", filepath)
 	file, err := os.Open(filepath)
 	if err != nil {
 		log.Fatal(err)
@@ -58,7 +59,7 @@ func (t *TikTokManager) UploadVideo(filepath string) {
 // corresponding API call.
 func (t *TikTokManager) uploadVideoAsDraft(size int64, file *os.File) string {
 	if size > 64000000 {
-		panic("file size too big to be uploaded in one chunk")
+		log.Fatalf("file size too big to be uploaded in one chunk")
 	}
 	response := t.sendFileUploadReq(size)
 	return t.sendVideoUploadReq(file, size, response)
@@ -67,15 +68,17 @@ func (t *TikTokManager) uploadVideoAsDraft(size int64, file *os.File) string {
 // sendFileUploadReq sends a request to allow uploading a video of the specified size to TikTok's API and returns the response from that call
 // as a FileUploadResponse struct. This must be invoked before sendVideoUploadReq to initiate an upload request.
 func (t *TikTokManager) sendFileUploadReq(size int64) FileUploadResponse {
+	
 	fileUploadReq := BuildFileUploadRequest(t.oauthToken, size)
+	log.Printf("Sending file upload request for video")
 	res, err := client.SendRequest(fileUploadReq)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	var videoUploadRes FileUploadResponse
 	err = json.Unmarshal(res, &videoUploadRes)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	return videoUploadRes
 }
@@ -84,11 +87,12 @@ func (t *TikTokManager) sendFileUploadReq(size int64) FileUploadResponse {
 // in a FileUploadResponse from a sendFileUploadReq call which is a pre-requisite when uploading onto a TikTok account via an API.
 // Returns a string representing the body of the video upload request.
 func (t *TikTokManager) sendVideoUploadReq(file *os.File, size int64, response FileUploadResponse) string {
+	log.Printf("Sending video upload request for video: %s", file.Name())
 	byteRange := fmt.Sprintf("bytes 0-%d/%d", size-1, size)
 	videoUploadReq := BuildVideoUploadRequest(file, byteRange, response.Data.UploadURL)
 	res, err := client.SendRequest(videoUploadReq)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	return string(res)
 }

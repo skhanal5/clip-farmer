@@ -27,9 +27,7 @@ To set the Twitch environment variables in the app config use the following comm
 .\clip-farmer.exe config twitch --client-id [client-id] --client-oauth [client-oauth]
 ```
 
-**Note**: A side effect of running either command is that it will generate a `config.yaml` file in the project
-root directory which is when the CLI is initially loaded. This makes it so, you do not have to set these values
-each time you want to use it.
+**Note**: A side effect of running either command is that it will generate a `config.yaml` file in the project root directory.The values in this file are loaded into memory during the initialization of the "root" command. Producing this file makes it so that you do not have to set these values each time you want to use the CLI.
 
 ### Fetch
 
@@ -43,7 +41,7 @@ with the following command:
 ```
 This will produce a link where you can authorize the application to access your account with the necessary
 scopes. Once the authorization flow is complete, it will fetch the OAuth token and set it as an environment variable
-for later use. One side effect, is that this will also produce a `tiktok_oauth_resp.json` file which will allow us
+for later use. One side effect is that this will also produce a `tiktok_oauth_resp.json` file which will allow us
 to re-use existing tokens and refresh tokens on expiration.
 
 #### Clips
@@ -57,6 +55,21 @@ Alternatively, you can pass in query parameters to filter clips by **time period
 ```
 .\clip-farmer.exe fetch clips twitch -u [username] -p [period-of-time] -s [sort-filter]
 ```
+
+### Edit
+**Prerequisite:** To edit clips, you must have ffmpeg installed on your local environment. I am not distributing this.
+
+You can edit downloaded clips by using the edit command and the type of edit you would like. To edit in bulk:
+```
+.\clip-farmer.exe edit --directory [directory] --output [output-directory] --blurred
+```
+
+Alternatively, to edit an individual file
+```
+.\clip-farmer.exe edit --file [file] --output [output-directory] --blurred
+```
+
+This library supports one edit option which is `blurred`. This will take a clip and produce a 1080x1920 video where the clip is centered in the middle of the screen and overlayed ontop of a blurred background. The blurred background is the same clip but stretched out to fit the resolution. 
 
 ### Post
 
@@ -72,6 +85,18 @@ Alternatively, you can post all videos under a directory with the following comm
 ```
 .\clip-farmer.exe post tiktok --directory [path-to-video-file] 
 ```
+
+### Clean
+This command will clean up any directories containing clips on your local filesystem.
+```
+ .\clip-farmer.exe clean --directory [directory] 
+```
+Alternatively, you can add a filter to delete all videos that are less than or equal to a `duration`:
+```
+ .\clip-farmer.exe clean --directory [directory] --duration [seconds]
+```
+**Note:** To clean clips with filter, you must have ffmpeg/ffprobe installed on your local environment.
+
 
 ### Help
 You can get help when interacting with the cli with either the `--help` or `-h` flags at any command-level.

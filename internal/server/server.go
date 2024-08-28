@@ -49,7 +49,7 @@ func StartCallbackServer(wg *sync.WaitGroup, codeCh chan<- string) {
 		}
 	})
 
-	log.Print("Starting the local server")
+	log.Println("Starting the local server")
 	// handle running the server in a separate goroutine until the user completes the auth flow
 	go func() {
 		defer wg.Done()

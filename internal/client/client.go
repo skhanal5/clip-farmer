@@ -29,7 +29,7 @@ func SendRequest(req *http.Request) ([]byte, error) {
 	}
 
 	if resp.StatusCode >= 400 {
-		log.Print("Received an invalid response " + resp.Status)
+		log.Println("Received an invalid response " + resp.Status)
 		return nil, errors.New(string(body))
 	}
 	return body, nil

@@ -53,10 +53,10 @@ func generateRawCodeChallenge(codeVerifier string) string {
 // Returns a string representing the authentication_code
 func authenticateTikTokUser(clientKey string, codeChallenge string) string {
 	authRequest := BuildAuthenticationRequest(clientKey, codeChallenge)
-	log.Print("Invoking TikTok Login request")
+	log.Println("Invoking TikTok Login request")
 
 	// Generates the authentication URL containing all necessary scopes
-	fmt.Println("Authenticate using this link: " + authRequest.URL.String())
+	log.Println("Authenticate using this link: " + authRequest.URL.String())
 
 	codeChan := make(chan string)
 	serverDone := &sync.WaitGroup{}
@@ -73,7 +73,7 @@ func authenticateTikTokUser(clientKey string, codeChallenge string) string {
 // a struct representing an OAuth token
 func sendTikTokOAuthRequest(clientKey string, clientSecret string, code string, codeVerifier string) OAuthToken {
 	oauthReq := BuildOAuthRequest(clientKey, clientSecret, code, codeVerifier)
-	log.Print("Invoking TikTok OAuth request")
+	log.Println("Invoking TikTok OAuth request")
 	responseBody, err := client.SendRequest(oauthReq)
 	if err != nil {
 		panic(err)
@@ -81,11 +81,10 @@ func sendTikTokOAuthRequest(clientKey string, clientSecret string, code string, 
 	var oauthResponse OAuthToken
 	err = json.Unmarshal(responseBody, &oauthResponse)
 	if err != nil {
-		log.Print(err)
+		log.Println(err)
 		panic(err)
 	}
-	log.Println(oauthResponse)
-	log.Print("Received TikTok OAuth details")
+	log.Println("Received TikTok OAuth details")
 	return oauthResponse
 }
 
@@ -93,16 +92,16 @@ func sendTikTokOAuthRequest(clientKey string, clientSecret string, code string, 
 func writeToFile(o OAuthToken) {
 	file, err := os.Create("tiktok_oauth_resp.json")
 	if err != nil {
-		log.Print(err)
+		log.Println(err)
 	}
 	defer file.Close()
 
 	data, err := json.MarshalIndent(o, "", "  ")
 	if err != nil {
-		log.Print(err)
+		log.Println(err)
 	}
 	_, err = file.Write(data)
 	if err != nil {
-		log.Print(err)
+		log.Println(err)
 	}
 }

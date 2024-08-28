@@ -32,7 +32,7 @@ func (t *TwitchManager) FetchAndDownloadClips(user string, period string, sort s
 	const requestDelay = 5 * time.Second // Delay between download attempts
 
 	userRes := t.fetchUser(user, period, sort)
-
+	time.Sleep(requestDelay)
 	edges := userRes.Data.User.Clips.Edges
 	clips := make([]Clip, 0)
 	for _, edge := range edges {
@@ -48,7 +48,7 @@ func (t *TwitchManager) FetchAndDownloadClips(user string, period string, sort s
 // fetchUser fetches clip data from the target user and returns it as a UserResponse
 func (t *TwitchManager) fetchUser(targetUser string, period string, sort string) UserResponse {
 	userRequest := BuildGetClipRequest(targetUser, period, sort, t.clientId, t.clientOAuth)
-	log.Print("Getting user: " + targetUser + " through Twitch GQL API with period: " + period + " sort: " + sort)
+	log.Println("Fetching user: " + targetUser + " through Twitch GQL API with period: " + period + " sort: " + sort)
 	body, err := client.SendRequest(userRequest)
 	if err != nil {
 		log.Fatal(err)
@@ -56,7 +56,7 @@ func (t *TwitchManager) fetchUser(targetUser string, period string, sort string)
 
 	var gqlResponse UserResponse
 	err = json.Unmarshal(body, &gqlResponse)
-	if err != nil {
+	if err != nil { 
 		log.Fatal(err)
 	}
 	return gqlResponse
@@ -66,7 +66,7 @@ func (t *TwitchManager) fetchUser(targetUser string, period string, sort string)
 // fetchClipDownloadInfo fetches metadata from the given clip with clipId and returns it as a ClipDownloadResponse
 func (t *TwitchManager) fetchClipDownloadInfo(clipId string) ClipDownloadResponse {
 	clipsRequest := BuildTwitchClipDownloadRequest(clipId, t.clientId, t.clientOAuth)
-	log.Print("Getting clip download info for clip with id: " + clipId + " through Twitch GQL API")
+	log.Println("Getting clip download info for clip with id: " + clipId + " through Twitch GQL API")
 	responseBody, err := client.SendRequest(clipsRequest)
 	if err != nil {
 		log.Fatal(err)
@@ -93,7 +93,7 @@ func downloadTwitchClips(path string, clips []Clip) {
 	directoryPath := "clips/" + path
 	err := os.MkdirAll(directoryPath, os.ModePerm)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	for _, clip := range clips {
 		mp4Link := buildClipDownloadURL(clip)
@@ -113,25 +113,25 @@ func downloadClip(downloadURL string, clipName string, directoryPath string) {
 	}
 	resp, err := client.Get(downloadURL)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer resp.Body.Close()
 
 	file, err := os.Create(filepath)
 
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer file.Close()
 
-	log.Print("Downloading clip " + filepath + " to local filesystem")
+	log.Println("Downloading clip " + filepath + " to local filesystem")
 
 	size := int64(0)
 	buf := make([]byte, chunkSize)
 	for {
 		n, err := resp.Body.Read(buf)
 		if err != nil && err != io.EOF {
-			panic(err)
+			log.Fatal(err)
 		}
 		if n == 0 {
 			break
@@ -139,7 +139,7 @@ func downloadClip(downloadURL string, clipName string, directoryPath string) {
 
 		_, err = file.Write(buf[:n])
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		size += int64(n)
 	}
@@ -148,12 +148,12 @@ func downloadClip(downloadURL string, clipName string, directoryPath string) {
 // buildClipDownloadURL takes a clip and generates a string containing the mp4 link
 // that can be downloaded via a request.
 func buildClipDownloadURL(clip Clip) string {
-	log.Print("Making download url for clip with id: " + clip.ID)
+	log.Println("Making download url for clip with id: " + clip.ID)
 	token := clip.PlaybackAccessToken
 	var valueTok Value
 	err := json.Unmarshal([]byte(token.Value), &valueTok)
 	if err != nil {
-		panic("Error unmarshalling JSON: " + err.Error())
+		log.Fatal("Error unmarshalling JSON: " + err.Error())
 	}
 
 	params := url.Values{}

@@ -1,10 +1,8 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
 package post
 
 import (
 	"errors"
+	"log"
 
 	"github.com/skhanal5/clip-farmer/internal/tiktok"
 	"github.com/spf13/cobra"
@@ -46,8 +44,8 @@ func init() {
 }
 
 func buildManager() (tiktok.TikTokManager, error) {
+	log.Println("Building TikTok Manager")
 	clientOAuth := viper.GetString("secrets.tiktok.client-oauth")
-
 	if clientOAuth == "" {
 		return tiktok.TikTokManager{}, errors.New("tiktok client-oauth is not configured")
 	}
