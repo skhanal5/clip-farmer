@@ -57,6 +57,8 @@ Alternatively, you can pass in query parameters to filter clips by **time period
 ```
 
 ### Edit
+**Prerequisite:** To edit clips, you must have ffmpeg installed on your local envrionment. I am not distributing this.
+
 You can edit downloaded clips by using the edit command and the type of edit you would like. To edit in bulk:
 ```
 .\clip-farmer.exe edit --directory [directory] --output [output-directory] --blurred
