@@ -3,14 +3,14 @@ package twitch
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"net/url"
 	"os"
+
 	"time"
 
 	"github.com/skhanal5/clip-farmer/internal/client"
+	"github.com/skhanal5/clip-farmer/internal/download"
 )
 
 // TwitchManager contains all necessary secret values required to interact with Twitch's API
@@ -81,86 +81,49 @@ func (t *TwitchManager) fetchClipDownloadInfo(clipId string) ClipDownloadRespons
 }
 
 
-const (
-	connectTimeout = 30 * time.Second
-	chunkSize      = 1024 * 1024
-	downloadDelay  = 20 * time.Second
-)
-
-// DownloadTwitchClips allows you to download the specified array of clips onto the
+// downloadTwitchClips allows you to download the specified array of clips onto the
 // path in your local filesystem.
 func downloadTwitchClips(path string, clips []Clip) {
-	directoryPath := "clips/" + path
-	err := os.MkdirAll(directoryPath, os.ModePerm)
-	if err != nil {
-		log.Fatal(err)
-	}
+	const downloadDelay = 20 * time.Second
+	makeDownloadOutputDirectory(path)
 	for _, clip := range clips {
-		mp4Link := buildClipDownloadURL(clip)
-		downloadClip(mp4Link, path+clip.ID, directoryPath)
+		mp4Link := constructRawMP4URLFromClip(clip)
+		clipOutputPath := path + "/" + clip.ID + ".mp4"
+		download.DownloadMP4File(mp4Link, clipOutputPath)
 		time.Sleep(downloadDelay)
 	}
 }
 
-// downloadClip handles the logic to download a clip given an url, the name of the clip, and a path
-// to write the contents of the clip to.
-//
-// This function was implemented using the logic from twitch-dl. All credit goes to the authors of that library.
-func downloadClip(downloadURL string, clipName string, directoryPath string) {
-	filepath := directoryPath + "/" + clipName + ".mp4"
-	client := http.Client{
-		Timeout: connectTimeout,
-	}
-	resp, err := client.Get(downloadURL)
+func makeDownloadOutputDirectory(path string) {
+	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-
-	file, err := os.Create(filepath)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	log.Println("Downloading clip " + filepath + " to local filesystem")
-
-	size := int64(0)
-	buf := make([]byte, chunkSize)
-	for {
-		n, err := resp.Body.Read(buf)
-		if err != nil && err != io.EOF {
-			log.Fatal(err)
-		}
-		if n == 0 {
-			break
-		}
-
-		_, err = file.Write(buf[:n])
-		if err != nil {
-			log.Fatal(err)
-		}
-		size += int64(n)
 	}
 }
 
-// buildClipDownloadURL takes a clip and generates a string containing the mp4 link
+// constructRawMP4URLFromClip takes a clip and generates a string containing the mp4 link
 // that can be downloaded via a request.
-func buildClipDownloadURL(clip Clip) string {
+func constructRawMP4URLFromClip(clip Clip) string {
 	log.Println("Making download url for clip with id: " + clip.ID)
+
 	token := clip.PlaybackAccessToken
-	var valueTok Value
-	err := json.Unmarshal([]byte(token.Value), &valueTok)
-	if err != nil {
-		log.Fatal("Error unmarshalling JSON: " + err.Error())
-	}
+	value := getValueFromToken(clip.PlaybackAccessToken)
 
 	params := url.Values{}
 	params.Set("response-content-disposition", "attachment")
 	params.Set("sig", token.Signature)
 	params.Set("token", token.Value)
-
-	finalURL := fmt.Sprintf("%s?%s", valueTok.ClipURI, params.Encode())
+	finalURL := fmt.Sprintf("%s?%s", value.ClipURI, params.Encode())
 	return finalURL
+}
+
+//TODO: This function should not be needed...
+// getValueFromToken unmarshals the value field into a Value struct
+func getValueFromToken(token PlaybackAccessToken) Value {
+	var value Value
+	err := json.Unmarshal([]byte(token.Value), &value)
+	if err != nil {
+		log.Fatalf("Error unmarshalling JSON: %v", err)
+	}
+	return value
 }
