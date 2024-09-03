@@ -27,26 +27,24 @@ func InitTwitchManager(clientId string, clientOAuth string) TwitchManager {
 	}
 }
 
+const requestDelay = 5 * time.Second // Delay between download attempts
+
 // FetchAndDownloadClips retrieves the clips from the user and downloads it into the local filesystem
 func (t *TwitchManager) FetchAndDownloadClips(user string, period string, sort string) {
-	const requestDelay = 5 * time.Second // Delay between download attempts
-
-	userRes := t.fetchUser(user, period, sort)
-	time.Sleep(requestDelay)
-	edges := userRes.Data.User.Clips.Edges
-	clips := make([]Clip, 0)
-	for _, edge := range edges {
-		slug := edge.Node.Slug
-		time.Sleep(requestDelay)
-		clip := t.fetchClipDownloadInfo(slug)
-		clips = append(clips, clip.Data.Clip)
-	}
+	clips := t.fetchAllClips(user, period, sort)
 	log.Printf("Fetched %d number of clips", len(clips))
-	downloadTwitchClips(user, clips)
+	downloadTwitchClips("clips/" + user, clips)
 }
 
-// fetchUser fetches clip data from the target user and returns it as a UserResponse
-func (t *TwitchManager) fetchUser(targetUser string, period string, sort string) UserResponse {
+func (t *TwitchManager) fetchAllClips(user string, period string, sort string) []Clip{
+	userRes := t.fetchUserClips(user, period, sort)
+	time.Sleep(requestDelay)
+	edges := userRes.Data.User.Clips.Edges
+	return t.fetchAllClipsWithMetadata(edges) // see if you can do this all in one step with fetchUserClips
+}
+
+// fetchUserClips fetches clip data from the target user and returns it as a UserResponse
+func (t *TwitchManager) fetchUserClips(targetUser string, period string, sort string) UserResponse {
 	userRequest := BuildGetClipRequest(targetUser, period, sort, t.clientId, t.clientOAuth)
 	log.Println("Fetching user: " + targetUser + " through Twitch GQL API with period: " + period + " sort: " + sort)
 	body, err := client.SendRequest(userRequest)
@@ -63,10 +61,23 @@ func (t *TwitchManager) fetchUser(targetUser string, period string, sort string)
 }
 
 
-// fetchClipDownloadInfo fetches metadata from the given clip with clipId and returns it as a ClipDownloadResponse
-func (t *TwitchManager) fetchClipDownloadInfo(clipId string) ClipDownloadResponse {
+func (t *TwitchManager) fetchAllClipsWithMetadata(edges []Edges) []Clip {
+	const requestDelay = 5 * time.Second 
+	clips := make([]Clip, 0)
+	for _, edge := range edges {
+		slug := edge.Node.Slug
+		time.Sleep(requestDelay)
+		clip := t.fetchClipMetadata(slug)
+		clips = append(clips, clip.Data.Clip)
+	}
+	return clips
+}
+
+
+// fetchClipMetadata fetches metadata from the given clip with clipId and returns it as a ClipDownloadResponse
+func (t *TwitchManager) fetchClipMetadata(clipId string) ClipDownloadResponse {
 	clipsRequest := BuildTwitchClipDownloadRequest(clipId, t.clientId, t.clientOAuth)
-	log.Println("Getting clip download info for clip with id: " + clipId + " through Twitch GQL API")
+	log.Println("Getting clip metadata for clip with id: " + clipId + " through Twitch GQL API")
 	responseBody, err := client.SendRequest(clipsRequest)
 	if err != nil {
 		log.Fatal(err)
@@ -88,6 +99,10 @@ func downloadTwitchClips(path string, clips []Clip) {
 	makeDownloadOutputDirectory(path)
 	for _, clip := range clips {
 		mp4Link := constructRawMP4URLFromClip(clip)
+		if mp4Link == "" {
+			log.Printf("Could not download clip with id: %s because the clip URI cannot be found", clip.ID)
+			continue
+		}
 		clipOutputPath := path + "/" + clip.ID + ".mp4"
 		download.DownloadMP4File(mp4Link, clipOutputPath)
 		time.Sleep(downloadDelay)
@@ -108,6 +123,10 @@ func constructRawMP4URLFromClip(clip Clip) string {
 
 	token := clip.PlaybackAccessToken
 	value := getValueFromToken(clip.PlaybackAccessToken)
+
+	if (value.ClipURI == "") {
+		return ""
+	}
 
 	params := url.Values{}
 	params.Set("response-content-disposition", "attachment")
