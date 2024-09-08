@@ -122,27 +122,14 @@ func constructRawMP4URLFromClip(clip Clip) string {
 	log.Println("Making download url for clip with id: " + clip.ID)
 
 	token := clip.PlaybackAccessToken
-	value := getValueFromToken(clip.PlaybackAccessToken)
 
-	if (value.ClipURI == "") {
-		return ""
-	}
+	clipURI := clip.VideoQualities[0].SourceURL
 
 	params := url.Values{}
 	params.Set("response-content-disposition", "attachment")
 	params.Set("sig", token.Signature)
 	params.Set("token", token.Value)
-	finalURL := fmt.Sprintf("%s?%s", value.ClipURI, params.Encode())
+	finalURL := fmt.Sprintf("%s?%s", clipURI, params.Encode())
 	return finalURL
 }
 
-//TODO: This function should not be needed...
-// getValueFromToken unmarshals the value field into a Value struct
-func getValueFromToken(token PlaybackAccessToken) Value {
-	var value Value
-	err := json.Unmarshal([]byte(token.Value), &value)
-	if err != nil {
-		log.Fatalf("Error unmarshalling JSON: %v", err)
-	}
-	return value
-}
