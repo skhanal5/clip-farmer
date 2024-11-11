@@ -42,7 +42,7 @@ func deleteAll(inputDir string) {
 	} else {
 		log.Printf("Successfully deleted all videos in directory: %s", inputDir)
 	}
-	
+
 }
 
 func deleteAllWithDurationFilter(duration int) {
@@ -54,7 +54,7 @@ func deleteAllWithDurationFilter(duration int) {
 	var count int
 	for _, file := range dir {
 		filePath := inputDir + "/" + file.Name()
-		if (validateFileDuration(filePath, duration)) {
+		if validateFileDuration(filePath, duration) {
 			count += 1
 		}
 	}
@@ -64,7 +64,7 @@ func deleteAllWithDurationFilter(duration int) {
 
 func validateFileDuration(filePath string, duration int) bool {
 	fileDuration := getDuration(filePath)
-	
+
 	if fileDuration > float64(duration) {
 		return false
 	}

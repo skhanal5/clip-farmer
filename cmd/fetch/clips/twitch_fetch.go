@@ -11,9 +11,9 @@ import (
 )
 
 var (
-	user string
+	user   string
 	period string
-	sort string
+	sort   string
 )
 
 // twitchCmd represents the twitch subcommand

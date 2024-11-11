@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	inputDir string
-	inputPath string
-	outputPath string
+	inputDir      string
+	inputPath     string
+	outputPath    string
 	blurredOption bool
 )
 
@@ -30,20 +30,19 @@ var editCmd = &cobra.Command{
 			if inputDir != "" {
 				createVideosWithBlurredBackground(inputDir, outputPath)
 			}
-		}		
+		}
 		return nil
 	},
 }
 
 func Init() *cobra.Command {
 	editCmd.Flags().StringVarP(&inputDir, "directory", "d", "",
-	"Directory containing the mp4 files that we would like to edit")
+		"Directory containing the mp4 files that we would like to edit")
 
 	editCmd.Flags().StringVarP(&inputPath, "file", "f", "",
 		"Path of the mp4 file that we would like to edit")
 	editCmd.Flags().StringVarP(&outputPath, "output", "o", "",
 		"Path of the resulting edited video.")
-	
 
 	// One of input or directory is needed to start editing
 	// Output is always required
@@ -53,7 +52,7 @@ func Init() *cobra.Command {
 	editCmd.MarkFlagsOneRequired("output")
 
 	editCmd.Flags().BoolVarP(&blurredOption, "blurred", "b", false,
-	"Make a video that is overlayed ontop of a blurred background")
+		"Make a video that is overlayed ontop of a blurred background")
 	editCmd.MarkFlagsOneRequired("blurred")
 	return editCmd
 }
@@ -76,19 +75,18 @@ func createVideosWithBlurredBackground(inputDir string, outputPath string) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		createVideoWithBlurredBackground(inputDir + "/" + fileInfo.Name(), outputPath)	
+		createVideoWithBlurredBackground(inputDir+"/"+fileInfo.Name(), outputPath)
 	}
 
 	wg.Wait()
 }
 
-func getFilename(inputPath string) string{
+func getFilename(inputPath string) string {
 	return filepath.Base(inputPath)
 }
 
 func createVideoWithBlurredBackground(inputPath string, outputDir string) {
 	log.Print("Blurring the video")
-	
 
 	err := os.MkdirAll("bin", os.ModePerm)
 	if err != nil {
@@ -101,27 +99,27 @@ func createVideoWithBlurredBackground(inputPath string, outputDir string) {
 	cmd := exec.Command("ffmpeg", "-i", inputPath, "-vf", "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=50", "-an", "bin/tmp.mp4")
 	fmt.Println(cmd.Args)
 	_, err = cmd.CombinedOutput()
-	
+
 	// delete video using defer
 	defer deleteTmpFiles()
-	
+
 	if err != nil {
 		log.Fatalf("Failed to blur video. Error: %s", err)
-	} 
-	
+	}
+
 	// then overlay the video with the "clear" version
 	log.Print("Overlaying the original video on top of the blurred video.")
 	outputFilePath := outputDir + "/" + getFilename(inputPath)
 	cmd = exec.Command("ffmpeg", "-i", "bin/tmp.mp4", "-i", inputPath, "-filter_complex", "[1:v]scale=1080:607[ovr];[0:v][ovr]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2", outputFilePath)
 	fmt.Println(cmd.Args)
-	
+
 	_, err = cmd.CombinedOutput()
 	if err != nil {
 		log.Fatalf("Failed to merge blurred and original video")
-	}  
+	}
 
 	log.Print("Successfully created video")
-} 
+}
 
 func deleteTmpFiles() {
 	err := os.RemoveAll("bin")

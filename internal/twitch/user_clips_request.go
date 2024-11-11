@@ -21,7 +21,7 @@ func buildClipReq(username string, period string, sort string) *bytes.Buffer {
 	req := buildGQLClipQuery(username, period, sort)
 	jsonData, err := json.Marshal(req)
 	if err != nil {
-		log.Fatal(err )
+		log.Fatal(err)
 	}
 	return bytes.NewBuffer(jsonData)
 }
@@ -29,7 +29,7 @@ func buildClipReq(username string, period string, sort string) *bytes.Buffer {
 // convert period and sort to enums
 func buildGQLClipQuery(username string, period string, sort string) GQLRequest {
 	var req GQLRequest
-	if (period != "") {
+	if period != "" {
 		req = GQLRequest{
 			Query: `query($username: String! $period: ClipsPeriod! $sort: ClipsSort!) {
 				user(login: $username) {
@@ -45,8 +45,8 @@ func buildGQLClipQuery(username string, period string, sort string) GQLRequest {
 			}`,
 			Variables: map[string]interface{}{
 				"username": username,
-				"period": period,
-				"sort": sort,
+				"period":   period,
+				"sort":     sort,
 			},
 		}
 	} else {

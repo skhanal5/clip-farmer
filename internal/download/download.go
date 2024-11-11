@@ -22,7 +22,7 @@ func DownloadMP4File(mp4Link string, outputPath string) {
 }
 
 // getMP4URL handles sending a GET request to the URL containing
-// the raw mp4 file. 
+// the raw mp4 file.
 // Returns the response body of the GET request.
 func getMP4URL(url string) io.ReadCloser {
 	log.Printf("Getting MP4 file at URL: %s\n", url)
