@@ -68,7 +68,7 @@ func (t *TikTokManager) uploadVideoAsDraft(size int64, file *os.File) string {
 // sendFileUploadReq sends a request to allow uploading a video of the specified size to TikTok's API and returns the response from that call
 // as a FileUploadResponse struct. This must be invoked before sendVideoUploadReq to initiate an upload request.
 func (t *TikTokManager) sendFileUploadReq(size int64) FileUploadResponse {
-	
+
 	fileUploadReq := BuildFileUploadRequest(t.oauthToken, size)
 	log.Printf("Sending file upload request for video")
 	res, err := client.SendRequest(fileUploadReq)

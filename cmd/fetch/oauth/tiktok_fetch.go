@@ -5,9 +5,9 @@ import (
 	"errors"
 	"github.com/skhanal5/clip-farmer/cmd/config"
 	"github.com/skhanal5/clip-farmer/internal/tiktok"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
-	"github.com/spf13/cobra"
 )
 
 // tiktokCmd represents the tiktok command

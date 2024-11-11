@@ -35,7 +35,6 @@ func SendRequest(req *http.Request) ([]byte, error) {
 	return body, nil
 }
 
-
 func GetURL(URL string) (io.ReadCloser, error) {
 	resp, err := client.Get(URL)
 	if err != nil {
